@@ -87,11 +87,7 @@ const MOCK_CUSTOMERS = [
       "left-Thumb": "/fingers/left-thumb.png", "left-Index": "/fingers/left-index.png", "left-Middle": "/fingers/left-middle.png", "left-Ring": "/fingers/left-ring.png", "left-Pinky": "/fingers/left-pinky.png",
       "right-Thumb": "/fingers/right-thumb.png", "right-Index": "/fingers/right-index.png", "right-Middle": "/fingers/right-middle.png", "right-Ring": "/fingers/right-ring.png", "right-Pinky": "/fingers/right-pinky.png",
     },
-    brands: [
-      { name: "Tomicca", shape: "Almond", variant: "Short",
-        left: { Thumb: 3, Index: 5, Middle: 4, Ring: 4, Pinky: 11 },
-        right: { Thumb: 3, Index: 5, Middle: 4, Ring: 4, Pinky: 11 } },
-    ],
+    brands: [],
   },
   {
     id: 2, name: "Jessica Torres", date: "Feb 13, 2026", scanComplete: true, outcome: "perfect", outcomeFingers: [], overrides: {}, changelog: [], manual: false,
@@ -722,87 +718,110 @@ export default function App() {
               </div>
             ) : (
               <>
-                {/* Scan captured card */}
-                <div style={{ background: THEME.cardBg, borderRadius: THEME.radiusCard, padding: '18px 16px', marginBottom: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 10, background: `${THEME.lavender}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={THEME.purpleDark} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                {/* Scan captured card — only shown before brands are added */}
+                {sel.brands.length === 0 && (
+                  <div style={{ background: THEME.cardBg, borderRadius: THEME.radiusCard, padding: '20px 18px', marginBottom: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 10, background: `${THEME.pinkLight}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={THEME.pink} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                      </div>
+                      <div style={{ fontSize: 18, fontWeight: 900, fontFamily: THEME.fontDisplay, fontStyle: 'italic' }}>Scan captured</div>
                     </div>
-                    <div>
-                      <div style={{ fontSize: 15, fontWeight: 800, fontFamily: THEME.fontDisplay }}>Scan captured</div>
-                      <div style={{ fontSize: 11, color: THEME.textFaint }}>{sel.date}</div>
-                    </div>
+                    <div style={{ fontSize: 13, color: THEME.textFaint, marginBottom: 16 }}>Tap any finger to preview the capture.</div>
+                    {["left", "right"].map(hand => (
+                      <div key={hand} style={{ marginBottom: hand === "left" ? 12 : 0 }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>{hand} hand</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
+                          {FINGERS.map(finger => {
+                            const photoKey = `${hand}-${finger}`;
+                            const hasPhoto = sel.photos?.[photoKey];
+                            return (
+                              <button key={finger} onClick={() => openFinger(hand, finger, sel.brands[0]?.name)} style={{
+                                textAlign: 'center', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: THEME.fontBody,
+                              }}>
+                                <div style={{
+                                  aspectRatio: '3/4', borderRadius: 12, overflow: 'hidden',
+                                  background: hasPhoto ? `url(${sel.photos[photoKey]}) center/cover` : `${THEME.lavender}20`,
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  border: `1.5px solid ${THEME.lavender}33`,
+                                }}>
+                                  {!hasPhoto && (
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={THEME.lavender} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                                  )}
+                                </div>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textFaint, marginTop: 4, textTransform: 'uppercase' }}>{finger.slice(0, 2)}</div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  {/* Finger photo grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
-                    {FINGERS.map(finger => {
-                      const photoKey = `left-${finger}`;
-                      const hasPhoto = sel.photos?.[photoKey];
+                )}
+
+                {/* Sizes section */}
+                <h2 style={{ fontSize: 22, fontWeight: 900, margin: '0 0 4px', fontFamily: THEME.fontDisplay, fontStyle: 'italic' }}>Sizes</h2>
+
+                {sel.brands.length === 0 ? (
+                  <>
+                    {/* Empty state — fresh scan, no brands */}
+                    <p style={{ fontSize: 13, color: THEME.textFaint, margin: '0 0 20px', lineHeight: 1.5 }}>
+                      {sel.name.split(" ")[0]}'s scan looks great. Add a brand to generate their perfect sizes.
+                    </p>
+                    <div style={{
+                      background: THEME.cardBg, borderRadius: THEME.radiusCard, padding: '28px 20px',
+                      textAlign: 'center', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', marginBottom: 16,
+                      border: `1.5px dashed ${THEME.lavender}44`,
+                    }}>
+                      <div style={{ width: 48, height: 48, borderRadius: 14, background: `linear-gradient(135deg, ${THEME.pinkLight}33, ${THEME.lavender}33)`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={THEME.pink} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 14.66V20a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2h5.34"/><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"/></svg>
+                      </div>
+                      <div style={{ fontSize: 17, fontWeight: 800, color: THEME.text, marginBottom: 4, fontFamily: THEME.fontDisplay, fontStyle: 'italic' }}>No brands yet</div>
+                      <div style={{ fontSize: 13, color: THEME.textMuted, lineHeight: 1.5 }}>Add a brand to generate sizes from this scan.</div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Has brands — show count + review progress + cards */}
+                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
+                      <div />
+                      <span style={{ fontSize: 13, fontWeight: 500, color: THEME.textFaint }}>{sel.brands.length} brand{sel.brands.length !== 1 ? 's' : ''}</span>
+                    </div>
+
+                    {!sel.manual && (() => {
+                      const total = FINGERS.length * 2;
+                      const reviewed = FINGERS.reduce((acc, f) => acc + ["left", "right"].filter(h => reviewedFingers[`${sel.id}-${h}-${f}`]).length, 0);
+                      const allReviewed = reviewed === total;
                       return (
-                        <div key={finger} style={{ textAlign: 'center' }}>
-                          <div style={{
-                            aspectRatio: '3/4', borderRadius: 10, overflow: 'hidden',
-                            background: hasPhoto ? `url(${sel.photos[photoKey]}) center/cover` : `${THEME.lavender}30`,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            border: `1px solid ${THEME.lavender}44`,
-                          }}>
-                            {!hasPhoto && (
-                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={THEME.lavender} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                            )}
+                        <div style={{ background: allReviewed ? THEME.greenBg : `${THEME.lavender}22`, borderRadius: THEME.radiusCard, padding: '12px 14px', marginBottom: 14, border: `1px solid ${allReviewed ? THEME.greenBd : THEME.lavender + '44'}` }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: allReviewed ? 0 : 8 }}>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: allReviewed ? THEME.green : THEME.purpleDark }}>
+                              {allReviewed ? "\u2713 All sizes reviewed" : `${reviewed}/${total} sizes reviewed`}
+                            </div>
+                            {!allReviewed && <div style={{ fontSize: 11, color: THEME.textFaint }}>Tap each one to review</div>}
                           </div>
-                          <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textFaint, marginTop: 4, textTransform: 'uppercase' }}>{finger.slice(0, 2)}</div>
+                          {!allReviewed && (
+                            <div style={{ height: 4, background: `${THEME.lavender}44`, borderRadius: 2, overflow: 'hidden' }}>
+                              <div style={{ height: '100%', background: `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})`, borderRadius: 2, width: `${(reviewed / total) * 100}%`, transition: 'width 0.3s ease' }} />
+                            </div>
+                          )}
                         </div>
                       );
-                    })}
-                  </div>
-                </div>
+                    })()}
 
-                {/* Sizes heading */}
-                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
-                  <h2 style={{ fontSize: 20, fontWeight: 900, margin: 0, fontFamily: THEME.fontDisplay }}>Sizes</h2>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: THEME.textFaint }}>{sel.brands.length} brand{sel.brands.length !== 1 ? 's' : ''}</span>
-                </div>
-
-                {/* Review progress */}
-                {!sel.manual && (() => {
-                  const total = FINGERS.length * 2;
-                  const reviewed = FINGERS.reduce((acc, f) => acc + ["left", "right"].filter(h => reviewedFingers[`${sel.id}-${h}-${f}`]).length, 0);
-                  const allReviewed = reviewed === total;
-                  return (
-                    <div style={{ background: allReviewed ? THEME.greenBg : `${THEME.lavender}22`, borderRadius: THEME.radiusCard, padding: '12px 14px', marginBottom: 14, border: `1px solid ${allReviewed ? THEME.greenBd : THEME.lavender + '44'}` }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: allReviewed ? 0 : 8 }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: allReviewed ? THEME.green : THEME.purpleDark }}>
-                          {allReviewed ? "\u2713 All sizes reviewed" : `${reviewed}/${total} sizes reviewed`}
-                        </div>
-                        {!allReviewed && <div style={{ fontSize: 11, color: THEME.textFaint }}>Tap each one to review</div>}
-                      </div>
-                      {!allReviewed && (
-                        <div style={{ height: 4, background: `${THEME.lavender}44`, borderRadius: 2, overflow: 'hidden' }}>
-                          <div style={{ height: '100%', background: `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})`, borderRadius: 2, width: `${(reviewed / total) * 100}%`, transition: 'width 0.3s ease' }} />
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
-
-                {/* Brand cards */}
-                {sel.brands.length > 0 ? sel.brands.map((brand, bi) => (
-                  <BrandSizeCard key={bi} brand={brand} brandIndex={bi} customer={sel} customerId={sel.id} reviewedFingers={reviewedFingers}
-                    onFingerTap={(hand, finger) => openFinger(hand, finger, brand.name)}
-                    onRemove={(idx) => setCustomers(p => p.map(c => c.id === selectedId ? { ...c, brands: c.brands.filter((_, i) => i !== idx) } : c))}
-                    onEditSize={(idx, hand, finger, newSize) => setCustomers(p => p.map(c => {
-                      if (c.id !== selectedId) return c;
-                      const brands = [...c.brands];
-                      brands[idx] = { ...brands[idx], [hand]: { ...brands[idx][hand], [finger]: newSize } };
-                      return { ...c, brands };
-                    }))}
-                  />
-                )) : (
-                  <div style={{ background: THEME.cardBg, borderRadius: THEME.radiusCard, padding: '32px 20px', textAlign: 'center', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', marginBottom: 12 }}>
-                    <div style={{ fontSize: 28, marginBottom: 8 }}>{"\u{1F485}"}</div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: THEME.text, marginBottom: 4, fontFamily: THEME.fontDisplay }}>No brands yet</div>
-                    <div style={{ fontSize: 12, color: THEME.textFaint, lineHeight: 1.5 }}>Add a brand to generate sizes for this customer.</div>
-                  </div>
+                    {sel.brands.map((brand, bi) => (
+                      <BrandSizeCard key={bi} brand={brand} brandIndex={bi} customer={sel} customerId={sel.id} reviewedFingers={reviewedFingers}
+                        onFingerTap={(hand, finger) => openFinger(hand, finger, brand.name)}
+                        onRemove={(idx) => setCustomers(p => p.map(c => c.id === selectedId ? { ...c, brands: c.brands.filter((_, i) => i !== idx) } : c))}
+                        onEditSize={(idx, hand, finger, newSize) => setCustomers(p => p.map(c => {
+                          if (c.id !== selectedId) return c;
+                          const brands = [...c.brands];
+                          brands[idx] = { ...brands[idx], [hand]: { ...brands[idx][hand], [finger]: newSize } };
+                          return { ...c, brands };
+                        }))}
+                      />
+                    ))}
+                  </>
                 )}
 
                 {/* Add brand CTA - full width gradient */}
