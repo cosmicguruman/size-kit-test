@@ -255,10 +255,13 @@ export default function App() {
   // New Barbie redesign states
   const [searchFocused, setSearchFocused] = useState(false);
   const [prefsOpen, setPrefsOpen] = useState(false);
-  const [fitPref, setFitPref] = useState("just-right");
+  const [fitPref, setFitPref] = useState("snug");
   const [curvature, setCurvature] = useState("normal");
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < THEME.mobileBreak : false);
   const [deckOpen, setDeckOpen] = useState(false);
+  const [scanHistoryOpen, setScanHistoryOpen] = useState(false);
+  const [customerNotes, setCustomerNotes] = useState("");
+  const [customerTags, setCustomerTags] = useState(["Friends & family"]);
 
   // Inject CSS keyframe animations
   useEffect(() => {
@@ -669,27 +672,30 @@ export default function App() {
             </div>
             {/* Profile header */}
             <div style={{ textAlign: 'center', padding: '8px 24px 0', position: 'relative', zIndex: 3 }}>
-              <div style={{ width: 64, height: 64, borderRadius: 20, background: sel.manual ? 'rgba(255,255,255,0.1)' : `linear-gradient(135deg, ${THEME.pinkLight}, ${THEME.lavender})`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: sel.manual ? THEME.textFaint : 'white', fontSize: 20, fontWeight: 800, margin: '0 auto 10px', border: '3px solid rgba(255,255,255,0.15)' }}>{sel.name.split(" ").map(n => n[0]).join("")}</div>
-              <div style={{ fontSize: 24, fontWeight: 900, color: 'white', fontFamily: THEME.fontDisplay, fontStyle: 'italic' }}>{sel.name}</div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginTop: 4 }}>
-                Added {sel.date}
+              <div style={{ width: 80, height: 80, borderRadius: 24, background: sel.manual ? 'rgba(255,255,255,0.1)' : `linear-gradient(135deg, ${THEME.pinkLight}, ${THEME.lavender})`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: sel.manual ? THEME.textFaint : 'white', fontSize: 24, fontWeight: 800, margin: '0 auto 12px', border: '3px solid rgba(255,255,255,0.15)' }}>{sel.name.split(" ").map(n => n[0]).join("")}</div>
+              <div style={{ fontSize: 28, fontWeight: 900, color: 'white', fontFamily: THEME.fontDisplay, fontStyle: 'italic' }}>{sel.name}</div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', marginTop: 4, fontWeight: 500 }}>
+                Scanned {sel.date}
                 {sel.manual && <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 700, color: THEME.textFaint, background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: THEME.radiusPill }}>Manually added</span>}
               </div>
               {sel.scanComplete && (
-                <div style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(22,163,106,0.15)', borderRadius: THEME.radiusPill, padding: '3px 10px' }}>
-                  <div style={{ width: 6, height: 6, borderRadius: 3, background: THEME.green }} />
-                  <span style={{ fontSize: 10, fontWeight: 700, color: '#86efac' }}>Scan complete</span>
+                <div style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(22,163,74,0.18)', borderRadius: THEME.radiusPill, padding: '5px 14px', border: '1px solid rgba(34,197,94,0.2)' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#4ade80' }}>Scan complete</span>
                 </div>
               )}
               {/* Preference tags */}
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
-                <button onClick={() => setPrefsOpen(true)} style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: THEME.radiusPill, padding: '4px 12px', fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.7)', cursor: 'pointer', fontFamily: THEME.fontBody }}>
-                  Fit: {fitPref === 'snug' ? 'Snug' : fitPref === 'just-right' ? 'Just right' : 'Loose'}
-                </button>
-                <button onClick={() => setPrefsOpen(true)} style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: THEME.radiusPill, padding: '4px 12px', fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.7)', cursor: 'pointer', fontFamily: THEME.fontBody }}>
-                  Curvature: {curvature === 'flat' ? 'Flat' : curvature === 'normal' ? 'Normal' : 'C-curve'}
-                </button>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
+                <div style={{ background: 'rgba(168,85,247,0.15)', border: '1.5px solid rgba(168,85,247,0.35)', borderRadius: THEME.radiusPill, padding: '5px 16px', fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.8)', fontFamily: THEME.fontBody }}>
+                  {fitPref === 'snug' ? 'Snug fit' : fitPref === 'just-right' ? 'Just right fit' : 'Loose fit'}
+                </div>
+                <div style={{ background: 'rgba(232,98,154,0.1)', border: '1.5px solid rgba(232,98,154,0.4)', borderRadius: THEME.radiusPill, padding: '5px 16px', fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.8)', fontFamily: THEME.fontBody }}>
+                  {curvature === 'flat' ? 'Flat' : curvature === 'normal' ? 'Normal' : 'C-curve'} curvature
+                </div>
               </div>
+              <button onClick={() => setPrefsOpen(true)} style={{ background: 'none', border: 'none', fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: THEME.fontBody, marginTop: 8, textDecoration: 'underline', textUnderlineOffset: 3 }}>
+                Edit preferences
+              </button>
             </div>
           </CosmicBg>
 
@@ -716,8 +722,46 @@ export default function App() {
               </div>
             ) : (
               <>
-                {/* Sizes */}
-                <h2 style={{ fontSize: 20, fontWeight: 900, margin: '0 0 6px', fontFamily: THEME.fontDisplay }}>Sizes</h2>
+                {/* Scan captured card */}
+                <div style={{ background: THEME.cardBg, borderRadius: THEME.radiusCard, padding: '18px 16px', marginBottom: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: `${THEME.lavender}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={THEME.purpleDark} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 15, fontWeight: 800, fontFamily: THEME.fontDisplay }}>Scan captured</div>
+                      <div style={{ fontSize: 11, color: THEME.textFaint }}>{sel.date}</div>
+                    </div>
+                  </div>
+                  {/* Finger photo grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
+                    {FINGERS.map(finger => {
+                      const photoKey = `left-${finger}`;
+                      const hasPhoto = sel.photos?.[photoKey];
+                      return (
+                        <div key={finger} style={{ textAlign: 'center' }}>
+                          <div style={{
+                            aspectRatio: '3/4', borderRadius: 10, overflow: 'hidden',
+                            background: hasPhoto ? `url(${sel.photos[photoKey]}) center/cover` : `${THEME.lavender}30`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            border: `1px solid ${THEME.lavender}44`,
+                          }}>
+                            {!hasPhoto && (
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={THEME.lavender} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                            )}
+                          </div>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textFaint, marginTop: 4, textTransform: 'uppercase' }}>{finger.slice(0, 2)}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Sizes heading */}
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <h2 style={{ fontSize: 20, fontWeight: 900, margin: 0, fontFamily: THEME.fontDisplay }}>Sizes</h2>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: THEME.textFaint }}>{sel.brands.length} brand{sel.brands.length !== 1 ? 's' : ''}</span>
+                </div>
 
                 {/* Review progress */}
                 {!sel.manual && (() => {
@@ -741,12 +785,8 @@ export default function App() {
                   );
                 })()}
 
-                <p style={{ fontSize: 12, color: THEME.textFaint, margin: '0 0 16px', lineHeight: 1.5 }}>
-                  Tap each size to review and confirm. When in doubt, it's best practice to size up for a more customizable fit.
-                </p>
-
                 {/* Brand cards */}
-                {sel.brands.map((brand, bi) => (
+                {sel.brands.length > 0 ? sel.brands.map((brand, bi) => (
                   <BrandSizeCard key={bi} brand={brand} brandIndex={bi} customer={sel} customerId={sel.id} reviewedFingers={reviewedFingers}
                     onFingerTap={(hand, finger) => openFinger(hand, finger, brand.name)}
                     onRemove={(idx) => setCustomers(p => p.map(c => c.id === selectedId ? { ...c, brands: c.brands.filter((_, i) => i !== idx) } : c))}
@@ -757,29 +797,113 @@ export default function App() {
                       return { ...c, brands };
                     }))}
                   />
-                ))}
+                )) : (
+                  <div style={{ background: THEME.cardBg, borderRadius: THEME.radiusCard, padding: '32px 20px', textAlign: 'center', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', marginBottom: 12 }}>
+                    <div style={{ fontSize: 28, marginBottom: 8 }}>{"\u{1F485}"}</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: THEME.text, marginBottom: 4, fontFamily: THEME.fontDisplay }}>No brands yet</div>
+                    <div style={{ fontSize: 12, color: THEME.textFaint, lineHeight: 1.5 }}>Add a brand to generate sizes for this customer.</div>
+                  </div>
+                )}
 
-                {/* Add brand CTA */}
-                <div style={{ textAlign: 'center', marginTop: 16, marginBottom: 8 }}>
-                  <button onClick={() => { setAddBrandOpen(true); setAddBrandStep(1); setAddBrandName(null); setAddBrandShape(null); }} style={{
-                    background: `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})`,
-                    border: 'none', borderRadius: THEME.radiusPill, padding: '12px 28px',
-                    fontSize: 13, fontWeight: 700, color: 'white', cursor: 'pointer', fontFamily: THEME.fontBody,
-                    boxShadow: `0 4px 16px rgba(232,98,154,0.25)`, position: 'relative', overflow: 'hidden',
+                {/* Add brand CTA - full width gradient */}
+                <button onClick={() => { setAddBrandOpen(true); setAddBrandStep(1); setAddBrandName(null); setAddBrandShape(null); }} style={{
+                  width: '100%', padding: 16, background: `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})`,
+                  border: 'none', borderRadius: THEME.radiusPill, marginTop: 4, marginBottom: 12,
+                  fontSize: 14, fontWeight: 700, color: 'white', cursor: 'pointer', fontFamily: THEME.fontBody,
+                  boxShadow: `0 4px 16px rgba(232,98,154,0.25)`, position: 'relative', overflow: 'hidden',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                }}>
+                  <span style={{ fontSize: 18, fontWeight: 400 }}>+</span> Add Brand
+                  <div style={{ position: 'absolute', top: 0, left: 0, width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)', animation: 'shimmer 3s ease-in-out infinite' }} />
+                </button>
+
+                {/* View scan photos link */}
+                <button onClick={() => setTipsOpen(true)} style={{
+                  width: '100%', background: 'none', border: 'none', padding: '10px 0',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  fontSize: 13, fontWeight: 600, color: THEME.purpleDark, cursor: 'pointer', fontFamily: THEME.fontBody,
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={THEME.purpleDark} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                  View scan photos
+                </button>
+
+                {/* Rescan button - full width dark */}
+                <button style={{
+                  width: '100%', padding: 16, background: THEME.cosmic, border: 'none', borderRadius: THEME.radiusPill,
+                  fontSize: 14, fontWeight: 700, color: 'white', cursor: 'pointer', fontFamily: THEME.fontBody,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 24,
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  Rescan
+                </button>
+
+                {/* Scan history - collapsible */}
+                <div style={{ borderTop: `1px solid ${THEME.border}`, paddingTop: 16, marginBottom: 20 }}>
+                  <button onClick={() => setScanHistoryOpen(!scanHistoryOpen)} style={{
+                    width: '100%', background: 'none', border: 'none', padding: 0, display: 'flex',
+                    alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', fontFamily: THEME.fontBody,
                   }}>
-                    + Add Brand
-                    <div style={{ position: 'absolute', top: 0, left: 0, width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)', animation: 'shimmer 3s ease-in-out infinite' }} />
+                    <h3 style={{ fontSize: 16, fontWeight: 800, margin: 0, fontFamily: THEME.fontDisplay, color: THEME.text }}>Scan history</h3>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={THEME.textMuted} strokeWidth="2.5" strokeLinecap="round" style={{ transform: scanHistoryOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6"/></svg>
                   </button>
+                  {scanHistoryOpen && (
+                    <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <div style={{ background: THEME.cardBg, borderRadius: 14, padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: `1px solid ${THEME.border}` }}>
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: THEME.text }}>{sel.date}</div>
+                          <div style={{ fontSize: 11, color: THEME.textFaint, marginTop: 2 }}>10 fingers captured</div>
+                        </div>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: THEME.green, background: THEME.greenBg, padding: '3px 10px', borderRadius: THEME.radiusPill, border: `1px solid ${THEME.greenBd}` }}>Active</div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                {/* Rescan button */}
-                <div style={{ textAlign: 'center', marginTop: 8, marginBottom: 16 }}>
-                  <button style={{
-                    background: THEME.cosmic, border: 'none', borderRadius: THEME.radiusPill,
-                    padding: '10px 24px', fontSize: 12, fontWeight: 700, color: 'white',
+                {/* Tags section */}
+                <div style={{ borderTop: `1px solid ${THEME.border}`, paddingTop: 16, marginBottom: 20 }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 800, margin: '0 0 10px', fontFamily: THEME.fontDisplay, color: THEME.text }}>Tags</h3>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {customerTags.map((tag, i) => (
+                      <div key={i} style={{ background: `${THEME.lavender}18`, border: `1px solid ${THEME.lavender}44`, borderRadius: THEME.radiusPill, padding: '6px 14px', fontSize: 12, fontWeight: 600, color: THEME.purpleDark }}>{tag}</div>
+                    ))}
+                    <button onClick={() => {
+                      const tag = prompt("Add a tag:");
+                      if (tag?.trim()) setCustomerTags(prev => [...prev, tag.trim()]);
+                    }} style={{ background: 'none', border: `1.5px dashed ${THEME.textFaint}55`, borderRadius: THEME.radiusPill, padding: '6px 14px', fontSize: 12, fontWeight: 600, color: THEME.textFaint, cursor: 'pointer', fontFamily: THEME.fontBody }}>+ Tag</button>
+                  </div>
+                </div>
+
+                {/* Notes section */}
+                <div style={{ borderTop: `1px solid ${THEME.border}`, paddingTop: 16, marginBottom: 20 }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 800, margin: '0 0 10px', fontFamily: THEME.fontDisplay, color: THEME.text }}>Notes</h3>
+                  <textarea
+                    value={customerNotes}
+                    onChange={e => setCustomerNotes(e.target.value)}
+                    placeholder="Add notes about this customer..."
+                    style={{
+                      width: '100%', minHeight: 80, padding: '12px 14px', borderRadius: 14,
+                      border: `1.5px solid ${THEME.border}`, background: THEME.cardBg,
+                      fontSize: 13, fontFamily: THEME.fontBody, color: THEME.text,
+                      outline: 'none', resize: 'vertical', boxSizing: 'border-box',
+                      lineHeight: 1.5,
+                    }}
+                  />
+                </div>
+
+                {/* Delete customer */}
+                <div style={{ borderTop: `1px solid ${THEME.border}`, paddingTop: 20, textAlign: 'center', paddingBottom: 20 }}>
+                  <button onClick={() => {
+                    if (window.confirm(`Delete ${sel.name}? This cannot be undone.`)) {
+                      setCustomers(p => p.filter(c => c.id !== sel.id));
+                      home();
+                    }
+                  }} style={{
+                    background: 'none', border: `1.5px solid ${THEME.pinkLight}55`,
+                    borderRadius: THEME.radiusPill, padding: '10px 28px',
+                    fontSize: 13, fontWeight: 600, color: THEME.pink,
                     cursor: 'pointer', fontFamily: THEME.fontBody,
                   }}>
-                    Rescan
+                    Delete customer
                   </button>
                 </div>
 
@@ -850,65 +974,6 @@ export default function App() {
                     </div>
                   </>
                 )}
-
-                {/* Scan - finger photos */}
-                <div style={{ marginTop: 24, borderTop: `1px solid ${THEME.border}`, paddingTop: 18 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <h2 style={{ fontSize: 16, fontWeight: 800, margin: 0, fontFamily: THEME.fontDisplay }}>Review & Confirm</h2>
-                    <button onClick={() => setTipsOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: `${THEME.lavender}22`, border: `1.5px solid ${THEME.lavender}44`, borderRadius: THEME.radiusPill, padding: '6px 14px', fontSize: 11, fontWeight: 700, color: THEME.purpleDark, cursor: 'pointer', fontFamily: THEME.fontBody }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={THEME.purpleDark} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-                      Review Tips
-                    </button>
-                  </div>
-                  <p style={{ fontSize: 12, color: THEME.textFaint, margin: '0 0 14px', lineHeight: 1.5 }}>Tap any finger to view the capture and confirm sizing.</p>
-                  {["left", "right"].map(hand => (
-                    <div key={hand} style={{ marginBottom: hand === "left" ? 12 : 0 }}>
-                      <div style={{ fontSize: 11, fontWeight: 600, color: THEME.textMuted, marginBottom: 6 }}>{hand === "left" ? "Left hand" : "Right hand"}</div>
-                      <div style={{ display: 'flex', gap: 6 }}>
-                        {FINGERS.map(finger => {
-                          const photoKey = `${hand}-${finger}`;
-                          const photoSrc = sel.photos?.[photoKey] || FINGER_PHOTOS[photoKey] || '/fingers/left-thumb.png';
-                          const reviewKey = `${sel.id}-${hand}-${finger}`;
-                          const isReviewed = reviewedFingers[reviewKey];
-                          const isBorderline = sel.borderline[photoKey] && !sel.overrides[`${photoKey}-${sel.brands[0]?.name}`];
-                          const showFlag = !isReviewed && !sel.manual && sel.scanComplete;
-                          return (
-                            <div key={finger} style={{ flex: 1, position: 'relative' }}>
-                              {showFlag ? (
-                                <div style={{
-                                  position: 'absolute', top: -4, right: -2, zIndex: 2,
-                                  padding: '2px 6px', borderRadius: 6,
-                                  background: `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})`,
-                                  border: '2px solid white',
-                                  boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
-                                  fontSize: 8, fontWeight: 800, color: 'white', letterSpacing: 0.3,
-                                }}>Review</div>
-                              ) : isReviewed ? (
-                                <div style={{
-                                  position: 'absolute', top: -6, right: -4, zIndex: 2,
-                                  width: 20, height: 20, borderRadius: 10,
-                                  background: THEME.green,
-                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                  fontSize: 11, color: 'white', fontWeight: 900,
-                                  border: '2.5px solid white',
-                                  boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
-                                }}>{"\u2713"}</div>
-                              ) : null}
-                              <button onClick={() => openFinger(hand, finger, sel.brands[0]?.name)} style={{
-                                width: '100%', aspectRatio: '3/4',
-                                borderRadius: 12, border: 'none', padding: 0,
-                                cursor: 'pointer', overflow: 'hidden',
-                                background: `url(${photoSrc}) center/cover`,
-                                boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-                                display: 'block',
-                              }} />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </>
             )}
             </div>
