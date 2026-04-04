@@ -314,12 +314,34 @@ export default function App() {
   const open = id => { setSelectedId(id); setView("customer"); setFingerDetail(null); setOutcomeOpen(false); setAddBrandOpen(false); };
   const home = () => { setView("home"); setSelectedId(null); setFingerDetail(null); setOutcomeOpen(false); setAddBrandOpen(false); setSearch(""); setFilter("all"); setDeckOpen(false); };
   const openFinger = (hand, finger, brandName) => { setFingerDetail({ hand, finger, brandName }); setOverrideMode(false); };
-  const closeFinger = () => {
-    if (fingerDetail && selectedId) {
-      const key = `${selectedId}-${fingerDetail.hand}-${fingerDetail.finger}`;
-      setReviewedFingers(prev => ({ ...prev, [key]: true }));
+  const dismissFinger = () => { setFingerDetail(null); setOverrideMode(false); };
+  const confirmFinger = (overrideKey, newSize, reason) => {
+    if (!fingerDetail || !selectedId) return;
+    const brandName = fingerDetail.brandName;
+    // Save override if size was changed
+    if (overrideKey && newSize !== undefined) {
+      saveOverride(overrideKey, newSize, reason);
     }
-    setFingerDetail(null); setOverrideMode(false);
+    // Mark current finger as reviewed
+    const key = `${selectedId}-${brandName}-${fingerDetail.hand}-${fingerDetail.finger}`;
+    setReviewedFingers(prev => ({ ...prev, [key]: true }));
+    // Find next unreviewed finger for this brand
+    const seq = [];
+    ["left", "right"].forEach(h => FINGERS.forEach(f => seq.push({ hand: h, finger: f })));
+    const currentIdx = seq.findIndex(s => s.hand === fingerDetail.hand && s.finger === fingerDetail.finger);
+    // Look for next unreviewed starting after current, then wrap
+    const order = [...seq.slice(currentIdx + 1), ...seq.slice(0, currentIdx)];
+    const next = order.find(s => {
+      const rk = `${selectedId}-${brandName}-${s.hand}-${s.finger}`;
+      return !reviewedFingers[rk];
+    });
+    if (next) {
+      setFingerDetail({ hand: next.hand, finger: next.finger, brandName });
+      setOverrideMode(false);
+    } else {
+      // All done
+      setFingerDetail(null); setOverrideMode(false);
+    }
   };
 
   const addBrand = () => {
@@ -801,6 +823,11 @@ export default function App() {
 
                 {/* Sizes section */}
                 <h2 style={{ fontSize: 22, fontWeight: 900, margin: '0 0 4px', fontFamily: THEME.fontDisplay, fontStyle: 'italic' }}>Sizes</h2>
+                {sel.brands.length > 0 && (
+                  <p style={{ fontSize: 13, color: THEME.textFaint, margin: '0 0 16px', lineHeight: 1.5, fontStyle: 'italic' }}>
+                    Tap each size to view the scan and adjust if needed.
+                  </p>
+                )}
 
                 {sel.brands.length === 0 ? (
                   <>
@@ -822,33 +849,7 @@ export default function App() {
                   </>
                 ) : (
                   <>
-                    {/* Has brands — show count + review progress + cards */}
-                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
-                      <div />
-                      <span style={{ fontSize: 13, fontWeight: 500, color: THEME.textFaint }}>{sel.brands.length} brand{sel.brands.length !== 1 ? 's' : ''}</span>
-                    </div>
-
-                    {!sel.manual && (() => {
-                      const total = FINGERS.length * 2;
-                      const reviewed = FINGERS.reduce((acc, f) => acc + ["left", "right"].filter(h => reviewedFingers[`${sel.id}-${h}-${f}`]).length, 0);
-                      const allReviewed = reviewed === total;
-                      return (
-                        <div style={{ background: allReviewed ? THEME.greenBg : `${THEME.lavender}22`, borderRadius: THEME.radiusCard, padding: '12px 14px', marginBottom: 14, border: `1px solid ${allReviewed ? THEME.greenBd : THEME.lavender + '44'}` }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: allReviewed ? 0 : 8 }}>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: allReviewed ? THEME.green : THEME.purpleDark }}>
-                              {allReviewed ? "\u2713 All sizes reviewed" : `${reviewed}/${total} sizes reviewed`}
-                            </div>
-                            {!allReviewed && <div style={{ fontSize: 11, color: THEME.textFaint }}>Tap each one to review</div>}
-                          </div>
-                          {!allReviewed && (
-                            <div style={{ height: 4, background: `${THEME.lavender}44`, borderRadius: 2, overflow: 'hidden' }}>
-                              <div style={{ height: '100%', background: `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})`, borderRadius: 2, width: `${(reviewed / total) * 100}%`, transition: 'width 0.3s ease' }} />
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })()}
-
+                    {/* Has brands — cards with per-brand progress */}
                     {sel.brands.map((brand, bi) => (
                       <BrandSizeCard key={bi} brand={brand} brandIndex={bi} customer={sel} customerId={sel.id} reviewedFingers={reviewedFingers}
                         onFingerTap={(hand, finger) => openFinger(hand, finger, brand.name)}
@@ -874,16 +875,6 @@ export default function App() {
                 }}>
                   <span style={{ fontSize: 18, fontWeight: 400 }}>+</span> Add Brand
                   <div style={{ position: 'absolute', top: 0, left: 0, width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)', animation: 'shimmer 3s ease-in-out infinite' }} />
-                </button>
-
-                {/* View scan photos link */}
-                <button onClick={() => setTipsOpen(true)} style={{
-                  width: '100%', background: 'none', border: 'none', padding: '10px 0',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  fontSize: 13, fontWeight: 600, color: THEME.purpleDark, cursor: 'pointer', fontFamily: THEME.fontBody,
-                }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={THEME.purpleDark} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                  View scan photos
                 </button>
 
                 {/* Rescan button - full width dark */}
@@ -1092,7 +1083,7 @@ export default function App() {
 
 
       {/* Finger Detail Sheet */}
-      {fingerDetail && sel && <FingerSheet customer={sel} {...fingerDetail} onClose={closeFinger} overrideMode={overrideMode} setOverrideMode={setOverrideMode} overrideSize={overrideSize} setOverrideSize={setOverrideSize} overrideReason={overrideReason} setOverrideReason={setOverrideReason} saveOverride={saveOverride} onOpenTips={() => setTipsOpen(true)} />}
+      {fingerDetail && sel && <FingerSheet customer={sel} {...fingerDetail} onClose={dismissFinger} onConfirm={confirmFinger} onNavigate={(h, f) => { setFingerDetail({ hand: h, finger: f, brandName: fingerDetail.brandName }); setOverrideMode(false); }} reviewedFingers={reviewedFingers} customerId={selectedId} saveOverride={saveOverride} fitPref={fitPref} />}
 
       {/* Preferences Sheet */}
       {prefsOpen && (
@@ -1269,12 +1260,25 @@ function BrandSizeCard({ brand, brandIndex, customer, customerId, reviewedFinger
   const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState(false);
 
+  // Per-brand progress tracking
+  const total = FINGERS.length * 2;
+  const confirmed = FINGERS.reduce((acc, f) => acc + ["left", "right"].filter(h => reviewedFingers[`${customerId}-${brand.name}-${h}-${f}`]).length, 0);
+  const allConfirmed = confirmed === total;
+  const showProgress = !customer.manual && customer.scanComplete;
+
   return (
-    <div style={{ background: THEME.cardBg, borderRadius: THEME.radiusCard, padding: '16px 12px', marginBottom: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+    <div style={{ background: THEME.cardBg, borderRadius: THEME.radiusCard, padding: '16px 12px', marginBottom: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.04)', border: allConfirmed && showProgress ? `1.5px solid ${THEME.greenBd}` : '1.5px solid transparent' }}>
       {/* Header with brand info + actions */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: showProgress && !allConfirmed ? 8 : 14 }}>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: THEME.text, fontFamily: THEME.fontDisplay }}>{brand.name} · {brand.shape} · {brand.variant}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: THEME.text, fontFamily: THEME.fontDisplay }}>{brand.name} · {brand.shape} · {brand.variant}</div>
+            {allConfirmed && showProgress && (
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: THEME.greenBg, borderRadius: THEME.radiusPill, padding: '3px 10px', border: `1px solid ${THEME.greenBd}` }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: THEME.green }}>{"\u2713"} Reviewed</span>
+              </div>
+            )}
+          </div>
           {brandIndex === 0 && <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textFaint, marginTop: 2 }}>Original</div>}
         </div>
         <div style={{ position: 'relative' }}>
@@ -1294,6 +1298,21 @@ function BrandSizeCard({ brand, brandIndex, customer, customerId, reviewedFinger
         </div>
       </div>
 
+      {/* Per-brand progress bar */}
+      {showProgress && !allConfirmed && (
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: THEME.purpleDark }}>
+              {confirmed}/{total} reviewed
+            </div>
+            <div style={{ fontSize: 11, color: THEME.textFaint }}>Tap each to review</div>
+          </div>
+          <div style={{ height: 4, background: `${THEME.lavender}44`, borderRadius: 2, overflow: 'hidden' }}>
+            <div style={{ height: '100%', background: `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})`, borderRadius: 2, width: `${(confirmed / total) * 100}%`, transition: 'width 0.3s ease' }} />
+          </div>
+        </div>
+      )}
+
       {["left", "right"].map(hand => (
         <div key={hand} style={{ marginBottom: hand === "left" ? 14 : 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
@@ -1306,18 +1325,15 @@ function BrandSizeCard({ brand, brandIndex, customer, customerId, reviewedFinger
                 const override = customer.overrides[oKey];
                 const size = brand[hand]?.[finger];
                 const mm = customer.mm[hand]?.[finger];
-                const bKey = `${hand}-${finger}`;
-                const altSize = customer.borderline[bKey];
                 const displaySize = override ? override.newSize : size;
                 const isCorrected = !!override;
-                const reviewKey = `${customerId}-${hand}-${finger}`;
+                const reviewKey = `${customerId}-${brand.name}-${hand}-${finger}`;
                 const isReviewed = reviewedFingers[reviewKey];
-                const isBorderline = altSize && !isCorrected;
                 const showFlag = !isReviewed && !customer.manual && customer.scanComplete;
 
                 return (
                   <div key={finger} style={{ flex: 1, textAlign: 'center', position: 'relative' }}>
-                    {!editing && showFlag && (
+                    {!editing && showFlag && !allConfirmed && (
                       <div style={{
                         position: 'absolute', top: -6, right: -4, zIndex: 2,
                         padding: '2px 5px', borderRadius: 6,
@@ -1430,165 +1446,180 @@ function OutcomeFlow({ customer, step, setStep, tempOutcome, setTempOutcome, tem
 
 
 // ── Finger Detail Sheet ────────────────────────────────────
-function FingerSheet({ customer, hand, finger, brandName, onClose, overrideMode, setOverrideMode, overrideSize, setOverrideSize, overrideReason, setOverrideReason, saveOverride, onOpenTips }) {
+function FingerSheet({ customer, hand, finger, brandName, onClose, onConfirm, onNavigate, reviewedFingers, customerId, saveOverride, fitPref }) {
   const brand = customer.brands.find(b => b.name === brandName);
-  const size = brand[hand][finger];
-  const mm = customer.mm[hand][finger];
+  const size = brand?.[hand]?.[finger];
   const altSize = customer.borderline[`${hand}-${finger}`];
   const override = customer.overrides[`${hand}-${finger}-${brandName}`];
   const currentSize = override ? override.newSize : size;
   const [tempSize, setTempSize] = useState(currentSize);
-  const [feedbackTags, setFeedbackTags] = useState([]);
-  const [changeReason, setChangeReason] = useState(null);
-  const [otherReasonText, setOtherReasonText] = useState("");
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const hasChanged = tempSize !== currentSize;
-  const wasCorrected = !!override;
-  const reasonSelected = changeReason && (changeReason !== "Other" || otherReasonText.trim());
-
-  const handleSave = () => {
-    const key = `${hand}-${finger}-${brandName}`;
-    const reason = changeReason === "Other" ? otherReasonText.trim() : changeReason;
-    if (hasChanged) saveOverride(key, tempSize, reason);
-    onClose();
-  };
-
-  const fingerLog = (customer.changelog || []).filter(e => e.key === `${hand}-${finger}-${brandName}`);
   const photoKey = `${hand}-${finger}`;
   const photoSrc = customer.photos?.[photoKey] || FINGER_PHOTOS[photoKey] || '/fingers/left-thumb.png';
+
+  // Reset tempSize when finger changes
+  useEffect(() => {
+    const o = customer.overrides[`${hand}-${finger}-${brandName}`];
+    const s = brand?.[hand]?.[finger];
+    setTempSize(o ? o.newSize : s);
+  }, [hand, finger, brandName]);
+
+  // Build finger sequence for progress bar
+  const seq = [];
+  ["left", "right"].forEach(h => FINGERS.forEach(f => seq.push({ hand: h, finger: f })));
+  const currentIdx = seq.findIndex(s => s.hand === hand && s.finger === finger);
+  const FINGER_LABELS = { Thumb: "TH", Index: "IX", Middle: "MI", Ring: "RI", Pinky: "PI" };
+
+  // Borderline size labels based on fit preference
+  const smallSize = altSize ? Math.min(size, altSize) : null;
+  const largeSize = altSize ? Math.max(size, altSize) : null;
+
+  const handleConfirm = () => {
+    const key = `${hand}-${finger}-${brandName}`;
+    if (hasChanged) {
+      onConfirm(key, tempSize, "Adjusted during review");
+    } else {
+      onConfirm(null);
+    }
+  };
 
   return (
     <>
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 90, backdropFilter: 'blur(4px)' }} />
-      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: THEME.cardBg, borderRadius: `${THEME.radiusSheet}px ${THEME.radiusSheet}px 0 0`, zIndex: 100, maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 -4px 30px rgba(0,0,0,0.12)', padding: '12px 24px 32px' }}>
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: THEME.cardBg, borderRadius: `${THEME.radiusSheet}px ${THEME.radiusSheet}px 0 0`, zIndex: 100, maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 -4px 30px rgba(0,0,0,0.12)', padding: '12px 24px 32px', display: 'flex', flexDirection: 'column' }}>
+        {/* Drag handle */}
         <div style={{ width: 36, height: 4, borderRadius: 2, background: '#d4d4d8', margin: '0 auto 16px' }} />
 
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <div style={{ fontSize: 12, color: THEME.textFaint }}>{hand === "left" ? "Left" : "Right"} {finger} \u00b7 {brandName}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {wasCorrected && <div style={{ fontSize: 10, fontWeight: 700, color: THEME.purple, background: `${THEME.lavender}22`, padding: '3px 10px', borderRadius: THEME.radiusPill }}>Adjusted</div>}
-            <button onClick={onOpenTips} style={{ display: 'flex', alignItems: 'center', gap: 4, background: `${THEME.lavender}22`, border: `1.5px solid ${THEME.lavender}44`, borderRadius: THEME.radiusPill, padding: '4px 10px', fontSize: 10, fontWeight: 700, color: THEME.purpleDark, cursor: 'pointer', fontFamily: THEME.fontBody }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={THEME.purpleDark} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-              Tips
-            </button>
+        {/* Header — big finger name + X */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 4 }}>
+          <div>
+            <div style={{ fontSize: 28, fontWeight: 900, color: THEME.text, fontFamily: THEME.fontDisplay, fontStyle: 'italic', lineHeight: 1.1 }}>{finger}</div>
+            <div style={{ fontSize: 14, color: THEME.textMuted, fontWeight: 500, marginTop: 2 }}>{hand === "left" ? "Left" : "Right"} hand {"\u00b7"} {brandName}</div>
           </div>
+          <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: 18, background: THEME.border, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 4 }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={THEME.textMuted} strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+          </button>
         </div>
 
-        {/* Size */}
-        <div style={{ marginBottom: 20 }}>
-          {!altSize ? (
-            <>
-              <div style={{ fontSize: 13, fontWeight: 600, color: THEME.textMuted, marginBottom: 10 }}>Recommended size</div>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
-                  <button onClick={() => { setTempSize(Math.max(0, tempSize - 1)); if (tempSize - 1 === currentSize) setChangeReason(null); }} style={{
-                    width: 56, height: 56, borderRadius: '14px 0 0 14px',
-                    background: tempSize <= 0 ? '#fafafa' : THEME.border, border: `1.5px solid ${THEME.border}`, borderRight: 'none',
-                    fontSize: 24, fontWeight: 700, color: tempSize <= 0 ? '#d4d4d8' : THEME.text,
-                    cursor: tempSize <= 0 ? 'default' : 'pointer', fontFamily: THEME.fontBody,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>{"\u2212"}</button>
+        {/* Progress segments — tappable, labeled, grouped by hand */}
+        <div style={{ marginTop: 12, marginBottom: 20 }}>
+          <div style={{ display: 'flex', gap: 3 }}>
+            {seq.map((s, i) => {
+              const rk = `${customerId}-${brandName}-${s.hand}-${s.finger}`;
+              const isReviewed = reviewedFingers[rk];
+              const isCurrent = i === currentIdx;
+              return (
+                <button key={i} onClick={() => onNavigate(s.hand, s.finger)} style={{
+                  flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                  background: 'none', border: 'none', padding: '4px 0', cursor: 'pointer',
+                  fontFamily: THEME.fontBody, position: 'relative',
+                  marginRight: i === 4 ? 8 : 0,
+                }}>
                   <div style={{
-                    minWidth: 80, height: 56, background: THEME.cosmic,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    borderTop: `1.5px solid ${THEME.cosmic}`, borderBottom: `1.5px solid ${THEME.cosmic}`,
-                  }}>
-                    <div style={{ fontSize: 28, fontWeight: 900, color: 'white', lineHeight: 1 }}>{tempSize}</div>
-                  </div>
-                  <button onClick={() => { setTempSize(Math.min(11, tempSize + 1)); if (tempSize + 1 === currentSize) setChangeReason(null); }} style={{
-                    width: 56, height: 56, borderRadius: '0 14px 14px 0',
-                    background: tempSize >= 11 ? '#fafafa' : THEME.border, border: `1.5px solid ${THEME.border}`, borderLeft: 'none',
-                    fontSize: 24, fontWeight: 700, color: tempSize >= 11 ? '#d4d4d8' : THEME.text,
-                    cursor: tempSize >= 11 ? 'default' : 'pointer', fontFamily: THEME.fontBody,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>+</button>
-                </div>
-                {hasChanged && (
-                  <div style={{ textAlign: 'center', marginTop: 8 }}>
-                    <span style={{ fontSize: 11, color: THEME.textFaint }}>was {currentSize}</span>
-                  </div>
-                )}
-              </div>
-            </>
+                    width: '100%', height: 5, borderRadius: 3,
+                    background: isReviewed ? THEME.green : (isCurrent ? THEME.pink : `${THEME.lavender}33`),
+                    transition: 'background 0.2s',
+                    boxShadow: isCurrent ? `0 0 6px ${THEME.pink}55` : 'none',
+                  }} />
+                  <div style={{
+                    fontSize: 8, fontWeight: 700, letterSpacing: 0.3,
+                    color: isCurrent ? THEME.pink : (isReviewed ? THEME.green : THEME.textFaint),
+                    textTransform: 'uppercase',
+                  }}>{FINGER_LABELS[s.finger]}</div>
+                </button>
+              );
+            })}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2, paddingRight: 0 }}>
+            <div style={{ fontSize: 9, fontWeight: 600, color: THEME.textFaint, textTransform: 'uppercase', letterSpacing: 0.5, width: '50%', paddingLeft: 2 }}>Left</div>
+            <div style={{ fontSize: 9, fontWeight: 600, color: THEME.textFaint, textTransform: 'uppercase', letterSpacing: 0.5, width: '50%', paddingLeft: 10 }}>Right</div>
+          </div>
+        </div>
+
+        {/* Photo area — larger */}
+        <div onClick={() => setLightboxOpen(true)} style={{
+          borderRadius: THEME.radiusCard, overflow: 'hidden', position: 'relative',
+          background: `${THEME.lavender}15`, marginBottom: 16,
+          aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer',
+        }}>
+          {customer.photos?.[photoKey] ? (
+            <img src={photoSrc} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
-            <>
-              <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 14, padding: '12px 14px', marginBottom: 12 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#92400e', marginBottom: 2 }}>This nail is between size {Math.min(size, altSize)} and {Math.max(size, altSize)}</div>
-                <div style={{ fontSize: 12, color: '#a16207', lineHeight: 1.4 }}>When in doubt, size up.</div>
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {[Math.min(size, altSize), Math.max(size, altSize)].map(s => {
-                  const isSel = s === tempSize;
-                  return (
-                    <button key={s} onClick={() => { setTempSize(s); if (s === currentSize) setChangeReason(null); }} style={{
-                      flex: 1, padding: '16px 0', borderRadius: 14,
-                      background: isSel ? THEME.cosmic : THEME.cardBg,
-                      border: isSel ? 'none' : `1.5px solid ${THEME.border}`,
-                      fontSize: 24, fontWeight: 800,
-                      color: isSel ? 'white' : THEME.text,
-                      cursor: 'pointer', fontFamily: THEME.fontBody,
-                    }}>{s}</button>
-                  );
-                })}
-              </div>
-              {hasChanged && (
-                <div style={{ textAlign: 'center', marginTop: 8 }}>
-                  <span style={{ fontSize: 11, color: THEME.textFaint }}>was {currentSize}</span>
-                </div>
-              )}
-            </>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={`${THEME.lavender}66`} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
+            </svg>
           )}
-
-          {/* Reason bubbles + save */}
-          {hasChanged && (
-            <div style={{ marginTop: 16 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: THEME.textFaint, marginBottom: 10 }}>Reason (optional)</div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {["Verified with other method", "Customer requested", "Picture looked off", "Other"].map(reason => (
-                  <button key={reason} onClick={() => { setChangeReason(changeReason === reason ? null : reason); if (reason !== "Other") setOtherReasonText(""); }} style={{
-                    padding: '8px 14px', borderRadius: THEME.radiusPill,
-                    background: changeReason === reason ? THEME.cosmic : THEME.border,
-                    border: 'none',
-                    color: changeReason === reason ? 'white' : '#52525b',
-                    fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: THEME.fontBody,
-                    transition: 'all 0.15s',
-                  }}>{reason === "Other" ? "+ Other reason" : reason}</button>
-                ))}
-              </div>
-              {changeReason === "Other" && (
-                <input type="text" value={otherReasonText} onChange={e => setOtherReasonText(e.target.value)} placeholder="Tell us more..." autoFocus style={{
-                  width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${THEME.border}`,
-                  background: THEME.cardBg, fontSize: 13, fontFamily: THEME.fontBody, color: THEME.text,
-                  outline: 'none', marginTop: 10, boxSizing: 'border-box',
-                }} />
-              )}
-              <button onClick={handleSave} style={{
-                display: 'block', width: '100%', padding: 14, borderRadius: THEME.radiusCard,
-                background: `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})`, border: 'none',
-                fontSize: 13, fontWeight: 700, color: 'white',
-                cursor: 'pointer', fontFamily: THEME.fontBody, marginTop: 14,
-                boxShadow: `0 4px 16px rgba(232,98,154,0.25)`,
-              }}>Save & confirm</button>
-            </div>
-          )}
-
-        </div>
-
-        {/* Capture photo */}
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <div style={{ fontSize: 16, fontWeight: 800, fontFamily: THEME.fontDisplay }}>Capture</div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: THEME.textMuted, background: THEME.border, borderRadius: THEME.radiusPill, padding: '4px 10px' }}>Ref: US Quarter</div>
-          </div>
-          <div onClick={() => setLightboxOpen(true)} style={{ borderRadius: THEME.radiusCard, overflow: 'hidden', position: 'relative', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', maxWidth: 280, margin: '0 auto', cursor: 'pointer' }}>
-            <img src={photoSrc} style={{ width: '100%', display: 'block', borderRadius: THEME.radiusCard }} />
-            <div style={{ position: 'absolute', bottom: 8, right: 8, background: 'rgba(0,0,0,0.5)', borderRadius: 8, padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v6"/><path d="M8 11h6"/></svg>
-              <span style={{ fontSize: 10, fontWeight: 600, color: 'white' }}>Tap to zoom</span>
-            </div>
+          <div style={{ position: 'absolute', top: 12, left: 12, background: 'rgba(0,0,0,0.45)', borderRadius: 8, padding: '5px 12px', backdropFilter: 'blur(8px)' }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: 'white' }}>{finger} {"\u00b7"} {hand === "left" ? "L" : "R"}</span>
           </div>
         </div>
+
+        {/* Recommended size card */}
+        <div style={{
+          background: THEME.border, borderRadius: THEME.radiusCard, padding: '16px 20px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          marginBottom: altSize ? 12 : 20,
+        }}>
+          <div style={{ fontSize: 15, fontWeight: 600, color: THEME.text }}>Recommended size</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <button onClick={() => setTempSize(Math.min(11, tempSize + 1))} style={{
+                width: 32, height: 24, borderRadius: 8, background: THEME.cardBg, border: `1.5px solid ${THEME.lavender}44`,
+                cursor: tempSize >= 11 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: THEME.fontBody,
+              }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={tempSize >= 11 ? '#d4d4d8' : THEME.purpleDark} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+              </button>
+              <button onClick={() => setTempSize(Math.max(0, tempSize - 1))} style={{
+                width: 32, height: 24, borderRadius: 8, background: THEME.cardBg, border: `1.5px solid ${THEME.lavender}44`,
+                cursor: tempSize <= 0 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: THEME.fontBody,
+              }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={tempSize <= 0 ? '#d4d4d8' : THEME.purpleDark} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+            </div>
+            <div style={{ fontSize: 36, fontWeight: 900, color: THEME.cosmic, fontFamily: THEME.fontDisplay, fontStyle: 'italic', minWidth: 40, textAlign: 'center', lineHeight: 1 }}>{tempSize}</div>
+          </div>
+        </div>
+
+        {/* Borderline — preference-based options */}
+        {altSize && (
+          <div style={{ background: `${THEME.lavender}12`, borderRadius: 14, padding: '14px 16px', marginBottom: 20, border: `1px solid ${THEME.lavender}28` }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: THEME.purpleDark, marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>This finger is between sizes</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => setTempSize(smallSize)} style={{
+                flex: 1, padding: '12px 8px', borderRadius: 12,
+                background: tempSize === smallSize ? THEME.cosmic : THEME.cardBg,
+                border: tempSize === smallSize ? 'none' : `1.5px solid ${THEME.border}`,
+                cursor: 'pointer', fontFamily: THEME.fontBody, textAlign: 'center',
+              }}>
+                <div style={{ fontSize: 22, fontWeight: 900, color: tempSize === smallSize ? 'white' : THEME.text, lineHeight: 1 }}>{smallSize}</div>
+                <div style={{ fontSize: 10, fontWeight: 600, color: tempSize === smallSize ? 'rgba(255,255,255,0.7)' : THEME.textMuted, marginTop: 4 }}>Snugger fit</div>
+              </button>
+              <button onClick={() => setTempSize(largeSize)} style={{
+                flex: 1, padding: '12px 8px', borderRadius: 12,
+                background: tempSize === largeSize ? THEME.cosmic : THEME.cardBg,
+                border: tempSize === largeSize ? 'none' : `1.5px solid ${THEME.border}`,
+                cursor: 'pointer', fontFamily: THEME.fontBody, textAlign: 'center',
+              }}>
+                <div style={{ fontSize: 22, fontWeight: 900, color: tempSize === largeSize ? 'white' : THEME.text, lineHeight: 1 }}>{largeSize}</div>
+                <div style={{ fontSize: 10, fontWeight: 600, color: tempSize === largeSize ? 'rgba(255,255,255,0.7)' : THEME.textMuted, marginTop: 4 }}>More comfortable</div>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Confirm button */}
+        <button onClick={handleConfirm} style={{
+          width: '100%', padding: 18, background: THEME.cosmic, border: 'none',
+          borderRadius: THEME.radiusPill, fontSize: 16, fontWeight: 700, color: 'white',
+          cursor: 'pointer', fontFamily: THEME.fontBody,
+          boxShadow: '0 4px 16px rgba(14,10,26,0.3)',
+        }}>
+          Confirm
+        </button>
 
         {/* Lightbox */}
         {lightboxOpen && ReactDOM.createPortal(
@@ -1601,25 +1632,6 @@ function FingerSheet({ customer, hand, finger, brandName, onClose, overrideMode,
             </div>
           </div>,
           document.body
-        )}
-
-        {/* Change log */}
-        {fingerLog.length > 0 && (
-          <div style={{ borderTop: `1px solid ${THEME.border}`, paddingTop: 16 }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: THEME.text, marginBottom: 10, fontFamily: THEME.fontDisplay }}>Adjustments</div>
-            {fingerLog.map((entry, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: i < fingerLog.length - 1 ? 10 : 0, padding: '10px 12px', background: THEME.border, borderRadius: 12 }}>
-                <div style={{ width: 28, height: 28, borderRadius: 8, background: `${THEME.lavender}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={THEME.purple} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: THEME.text }}>Size {entry.from} {"\u2192"} {entry.to}</div>
-                  <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 2 }}>{entry.reason}</div>
-                </div>
-                <div style={{ fontSize: 10, color: THEME.textFaint, flexShrink: 0, marginTop: 2 }}>{entry.time}</div>
-              </div>
-            ))}
-          </div>
         )}
       </div>
     </>
