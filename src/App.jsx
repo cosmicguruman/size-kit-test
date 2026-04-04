@@ -437,9 +437,12 @@ export default function App() {
                 const expandedH = cards.length * (CARD_H + GAP) - GAP;
                 return (
                   <div style={{ marginBottom: deckOpen ? 28 : 24, maxWidth: isMobile ? '100%' : 520, marginLeft: isMobile ? 0 : 'auto', marginRight: isMobile ? 0 : 'auto' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                      <h2 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 900, margin: 0, fontFamily: THEME.fontDisplay, fontStyle: 'italic', color: THEME.text }}>Ready to size</h2>
-                      <div style={{ minWidth: 28, height: 28, borderRadius: THEME.radiusPill, background: `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: 'white', padding: '0 8px' }}>{needsReview.length}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <h2 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 900, margin: 0, fontFamily: THEME.fontDisplay, fontStyle: 'italic', color: THEME.text }}>Ready to size</h2>
+                        <div style={{ minWidth: 28, height: 28, borderRadius: THEME.radiusPill, background: `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: 'white', padding: '0 8px' }}>{needsReview.length}</div>
+                      </div>
+                      <button onClick={() => { setView("allReady"); setSearch(""); }} style={{ background: 'none', border: 'none', fontSize: 13, fontWeight: 600, color: THEME.pink, cursor: 'pointer', fontFamily: THEME.fontBody }}>See all</button>
                     </div>
                     <div style={{
                       position: 'relative',
@@ -482,23 +485,17 @@ export default function App() {
                               ? '0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08)'
                               : `0 ${2 + i * 3}px ${10 + i * 6}px rgba(0,0,0,${0.12 + i * 0.04})`,
                           }}>
-                            {/* Glass highlight along the top edge */}
                             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '50%', background: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%)', borderRadius: '24px 24px 0 0', pointerEvents: 'none' }} />
-                            {/* Soft radial glow */}
                             <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: '50%', height: '80%', background: 'radial-gradient(circle, rgba(255,255,255,0.10) 0%, transparent 70%)', pointerEvents: 'none' }} />
-                            {/* Content */}
                             <div style={{ position: 'relative', zIndex: 1 }}>
-                              {/* Badge + chevron row */}
                               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                                 <div style={{ display: 'inline-flex', alignItems: 'center', fontSize: 9, fontWeight: 800, letterSpacing: 1.2, textTransform: 'uppercase', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', padding: '5px 14px', borderRadius: THEME.radiusPill, color: 'rgba(255,255,255,0.95)', border: '1px solid rgba(255,255,255,0.15)' }}>READY TO SIZE</div>
                                 <div style={{ width: 34, height: 34, borderRadius: 11, background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.12)', opacity: (deckOpen || isTop) ? 1 : 0, transition: 'opacity 0.3s' }}>
                                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
                                 </div>
                               </div>
-                              {/* Name */}
                               <div style={{ fontSize: isMobile ? 22 : 26, fontWeight: 900, fontFamily: THEME.fontDisplay, fontStyle: 'italic', lineHeight: 1.1, marginBottom: 6, textShadow: '0 2px 12px rgba(0,0,0,0.15)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</div>
-                              {/* Meta */}
-                              <div style={{ fontSize: isMobile ? 12 : 13, opacity: 0.85, fontWeight: 500, letterSpacing: 0.2 }}>{c.brands[0]?.name} · {c.brands[0]?.shape} · {c.brands[0]?.variant}</div>
+                              <div style={{ fontSize: isMobile ? 12 : 13, opacity: 0.85, fontWeight: 500, letterSpacing: 0.2 }}>{c.brands[0]?.name ? `${c.brands[0].name} · ${c.brands[0].shape} · ${c.brands[0].variant}` : 'Scan complete · Ready for sizing'}</div>
                             </div>
                           </button>
                         );
@@ -513,7 +510,9 @@ export default function App() {
                     ) : cards.length > 1 ? (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 12, padding: '8px 18px', borderRadius: THEME.radiusPill, background: `linear-gradient(135deg, ${THEME.pink}18, ${THEME.purple}18)`, border: `1px solid ${THEME.pink}30`, width: 'fit-content', margin: '12px auto 0', cursor: 'pointer' }} onClick={() => setDeckOpen(true)}>
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={THEME.pink} strokeWidth="2.5" strokeLinecap="round"><path d="M6 9l6 6 6-6"/></svg>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: THEME.pink }}>{cards.length} ready · Tap to expand</span>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: THEME.pink }}>
+                          {needsReview.length > 4 ? `${needsReview.length} ready · Tap to expand` : `${cards.length} ready · Tap to expand`}
+                        </span>
                       </div>
                     ) : null}
                   </div>
@@ -523,7 +522,7 @@ export default function App() {
               {/* Customer Roster */}
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 14 }}>
                 <h2 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 900, margin: 0, fontFamily: THEME.fontDisplay, fontStyle: 'italic', color: THEME.text }}>Your customers</h2>
-                <span style={{ fontSize: 13, fontWeight: 500, color: THEME.textFaint }}>{customers.length} total</span>
+                <button onClick={() => { setView("allCustomers"); setSearch(""); }} style={{ background: 'none', border: 'none', fontSize: 13, fontWeight: 600, color: THEME.pink, cursor: 'pointer', fontFamily: THEME.fontBody }}>See all ({customers.length})</button>
               </div>
 
               {/* Search */}
@@ -583,6 +582,47 @@ export default function App() {
                   </div>
                 </div>
               )}
+            </div>
+          </CreamSection>
+        </div>
+      )}
+
+      {/* ════════ ALL READY TO SIZE ════════ */}
+      {view === "allReady" && (
+        <div>
+          <CosmicBg padBottom={46}>
+            <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 3 }}>
+              <button onClick={home} style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)', border: 'none', width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+              </button>
+              <div style={{ minWidth: 28, height: 28, borderRadius: THEME.radiusPill, background: `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: 'white', padding: '0 8px' }}>{needsReview.length}</div>
+            </div>
+            <div style={{ padding: '0 24px 10px' }}>
+              <h1 style={{ fontSize: 24, fontWeight: 900, margin: 0, color: 'white', fontFamily: THEME.fontDisplay, fontStyle: 'italic' }}>Ready to size</h1>
+            </div>
+          </CosmicBg>
+          <CreamSection>
+            <div style={{ maxWidth: THEME.maxWidth, margin: '0 auto', padding: '24px 20px 0' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {needsReview.map((c, i) => (
+                  <button key={c.id} onClick={() => open(c.id)} style={{
+                    display: 'flex', alignItems: 'center', gap: 12, width: '100%',
+                    background: THEME.cardBg, border: 'none', borderRadius: THEME.radiusCard,
+                    padding: '14px 16px', cursor: 'pointer', textAlign: 'left', fontFamily: THEME.fontBody,
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                    animation: `fadeUp 0.4s ease-out ${i * 0.04}s both`,
+                  }}>
+                    <div style={{ width: 42, height: 42, borderRadius: 14, background: `linear-gradient(135deg, ${THEME.pinkLight}, ${THEME.lavender})`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 13, fontWeight: 800, flexShrink: 0 }}>{c.name.split(" ").map(n => n[0]).join("")}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 1 }}>{c.name}</div>
+                      <div style={{ fontSize: 11, color: THEME.textFaint }}>{c.date}{c.brands[0] ? ` \u00b7 ${c.brands[0].name} \u00b7 ${c.brands[0].shape}` : ' \u00b7 No brands yet'}</div>
+                    </div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: THEME.pink, background: THEME.pinkLight + '33', padding: '3px 10px', borderRadius: THEME.radiusPill }}>Ready to size</div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4d4d8" strokeWidth="2" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+                  </button>
+                ))}
+                {needsReview.length === 0 && <div style={{ textAlign: 'center', padding: 40, color: THEME.textFaint, fontSize: 13 }}>No customers ready to size</div>}
+              </div>
             </div>
           </CreamSection>
         </div>
