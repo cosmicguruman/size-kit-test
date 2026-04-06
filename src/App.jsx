@@ -258,6 +258,9 @@ export default function App() {
   const [scanHistoryOpen, setScanHistoryOpen] = useState(false);
   const [customerNotes, setCustomerNotes] = useState("");
   const [customerTags, setCustomerTags] = useState(["Friends & family"]);
+  const [showCreateKit, setShowCreateKit] = useState(false);
+  const [newKitName, setNewKitName] = useState("");
+  const [newKitTags, setNewKitTags] = useState([]);
 
   // Inject CSS keyframe animations
   useEffect(() => {
@@ -426,7 +429,7 @@ export default function App() {
             </div>
             {/* Create Size Kit CTA */}
             <div style={{ padding: '16px 24px 0' }}>
-              <button style={{
+              <button onClick={() => setShowCreateKit(true)} style={{
                 width: '100%', padding: 18, background: `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})`,
                 border: 'none', borderRadius: THEME.radiusCard, color: 'white', fontSize: 16, fontWeight: 700,
                 cursor: 'pointer', fontFamily: THEME.fontBody, position: 'relative', overflow: 'hidden',
@@ -913,12 +916,15 @@ export default function App() {
                 <div style={{ borderTop: `1px solid ${THEME.border}`, paddingTop: 16, marginBottom: 20 }}>
                   <h3 style={{ fontSize: 16, fontWeight: 800, margin: '0 0 10px', fontFamily: THEME.fontDisplay, color: THEME.text }}>Tags</h3>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    {customerTags.map((tag, i) => (
-                      <div key={i} style={{ background: `${THEME.lavender}18`, border: `1px solid ${THEME.lavender}44`, borderRadius: THEME.radiusPill, padding: '6px 14px', fontSize: 12, fontWeight: 600, color: THEME.purpleDark }}>{tag}</div>
+                    {(sel.tags || []).map((tag, i) => (
+                      <div key={i} style={{ background: `${THEME.lavender}18`, border: `1px solid ${THEME.lavender}44`, borderRadius: THEME.radiusPill, padding: '6px 14px', fontSize: 12, fontWeight: 600, color: THEME.purpleDark, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {tag}
+                        <span onClick={() => setCustomers(prev => prev.map(c => c.id === sel.id ? { ...c, tags: c.tags.filter((_, ti) => ti !== i) } : c))} style={{ cursor: 'pointer', fontSize: 14, color: THEME.textFaint, lineHeight: 1 }}>&times;</span>
+                      </div>
                     ))}
                     <button onClick={() => {
                       const tag = prompt("Add a tag:");
-                      if (tag?.trim()) setCustomerTags(prev => [...prev, tag.trim()]);
+                      if (tag?.trim()) setCustomers(prev => prev.map(c => c.id === sel.id ? { ...c, tags: [...(c.tags || []), tag.trim()] } : c));
                     }} style={{ background: 'none', border: `1.5px dashed ${THEME.textFaint}55`, borderRadius: THEME.radiusPill, padding: '6px 14px', fontSize: 12, fontWeight: 600, color: THEME.textFaint, cursor: 'pointer', fontFamily: THEME.fontBody }}>+ Tag</button>
                   </div>
                 </div>
@@ -1250,6 +1256,207 @@ export default function App() {
           </div>
         </>
       )}
+
+      {/* Create Size Kit Modal */}
+      {showCreateKit && (() => {
+        const TAG_PRESETS = ["Friends & family", "Shopify", "Etsy", "Test"];
+        return (
+        <>
+          <div onClick={() => { setShowCreateKit(false); setNewKitName(""); setNewKitTags([]); }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, backdropFilter: 'blur(6px)' }} />
+          <div style={{ position: 'fixed', inset: 0, zIndex: 210, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+            <div style={{
+              borderRadius: THEME.radiusSheet + 2, maxWidth: 460, width: '100%',
+              background: `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple}, ${THEME.pinkLight})`,
+              padding: 2,
+              boxShadow: `0 25px 80px rgba(0,0,0,0.4), 0 0 40px rgba(232,98,154,0.2), 0 0 80px rgba(168,85,247,0.15)`,
+            }}>
+            <div style={{
+              borderRadius: THEME.radiusSheet, width: '100%', overflow: 'hidden',
+            }}>
+              {/* ── Cosmic header — mirrors CosmicBg exactly ── */}
+              <div style={{
+                background: `linear-gradient(170deg, ${THEME.cosmic}, ${THEME.cosmicMid}, ${THEME.cosmicEnd})`,
+                position: 'relative', overflow: 'hidden', paddingBottom: 28,
+              }}>
+                {/* Blobs — same as CosmicBg */}
+                {[
+                  { size: 200, top: -60, left: -40, colors: 'rgba(168,85,247,0.3), transparent', dur: '8s' },
+                  { size: 260, top: 20, right: -60, colors: 'rgba(232,98,154,0.25), transparent', dur: '12s' },
+                  { size: 180, bottom: -30, left: '40%', colors: 'rgba(196,181,253,0.2), transparent', dur: '10s' },
+                ].map((b, i) => (
+                  <div key={i} style={{ position: 'absolute', width: b.size, height: b.size, top: b.top, left: b.left, right: b.right, bottom: b.bottom, background: `radial-gradient(circle, ${b.colors})`, filter: 'blur(40px)', animation: `blobMorph ${b.dur} ease-in-out infinite`, opacity: 0.7 }} />
+                ))}
+                {/* Dot sparkles — same as CosmicBg */}
+                {Array.from({ length: 18 }, (_, i) => {
+                  const top = (7 + (i * 37) % 83) + '%';
+                  const left = (5 + (i * 53) % 89) + '%';
+                  const size = 1.5 + (i % 3);
+                  const dur = (2 + (i % 4)) + 's';
+                  const delay = (i * 0.4) + 's';
+                  return <div key={'s'+i} style={{ position: 'absolute', top, left, width: size, height: size, borderRadius: '50%', background: 'white', animation: `twinkle ${dur} ease-in-out ${delay} infinite` }} />;
+                })}
+                {/* Star characters — same as CosmicBg */}
+                {['\u2726','\u2727','\u2726','\u2727'].map((ch, i) => (
+                  <div key={'sp'+i} style={{ position: 'absolute', fontSize: [14,10,12,8][i], color: [THEME.lavender, THEME.pinkLight, 'white', THEME.lavender][i], top: ['15%','60%','40%','80%'][i], left: ['80%','15%','65%','45%'][i], animation: `sparkleRotate ${3+i}s ease-in-out infinite`, opacity: 0.7 }}>{ch}</div>
+                ))}
+
+                <div style={{ position: 'relative', zIndex: 3 }}>
+                  {/* Title → Avatar → Name → Instruction */}
+                  <div style={{ textAlign: 'center', padding: '24px 24px 0' }}>
+                    <h1 style={{ margin: '0 0 18px', fontSize: 32, fontWeight: 900, lineHeight: 1.15 }}>
+                      <span style={{ fontFamily: THEME.fontDisplay, fontStyle: 'italic', color: THEME.pinkLight }}>Create</span>{' '}
+                      <span style={{ fontFamily: THEME.fontDisplay, fontStyle: 'italic', color: 'white' }}>SizeKit</span>
+                    </h1>
+                    <div style={{
+                      width: 80, height: 80, borderRadius: 24,
+                      background: newKitName.trim() ? `linear-gradient(135deg, ${THEME.pinkLight}, ${THEME.lavender})` : `linear-gradient(135deg, rgba(249,168,212,0.25), rgba(196,181,253,0.25))`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      margin: '0 auto', border: `3px solid ${newKitName.trim() ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)'}`,
+                      transition: 'all 0.3s ease',
+                      boxShadow: newKitName.trim() ? '0 4px 20px rgba(232,98,154,0.3)' : 'none',
+                    }}>
+                      {newKitName.trim() ? (
+                        <span style={{ fontSize: 26, fontWeight: 800, color: 'white' }}>{newKitName.trim().split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}</span>
+                      ) : (
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" strokeLinecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: 'white', fontFamily: THEME.fontDisplay, fontStyle: 'italic', marginTop: 12 }}>
+                      {newKitName.trim() || 'New Customer'}
+                    </div>
+                    <div style={{ fontSize: 13, color: THEME.pinkLight, fontWeight: 600, marginTop: 6 }}>
+                      {newKitName.trim() ? 'Looking good \u2014 hit create when ready.' : 'Enter a customer name to get started.'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Cream form body ── */}
+              <div style={{
+                background: THEME.cream,
+                position: 'relative', zIndex: 2,
+                padding: '28px 24px 28px',
+              }}>
+                {/* Name input */}
+                <div style={{ marginBottom: 20 }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 800, margin: '0 0 10px', fontFamily: THEME.fontDisplay, color: THEME.text }}>Customer Name</h3>
+                  <input
+                    autoFocus
+                    value={newKitName}
+                    onChange={e => setNewKitName(e.target.value)}
+                    placeholder="Enter customer name..."
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && newKitName.trim()) {
+                        const newId = customers.length > 0 ? Math.max(...customers.map(c => c.id)) + 1 : 1;
+                        setCustomers(prev => [...prev, {
+                          id: newId, name: newKitName.trim(),
+                          date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                          scanComplete: false, outcome: null, outcomeFingers: [], overrides: {}, changelog: [],
+                          manual: false, mm: {}, coinMm: {}, borderline: {}, photos: {}, brands: [], tags: [...newKitTags],
+                        }]);
+                        setNewKitName(""); setNewKitTags([]); setShowCreateKit(false);
+                      }
+                    }}
+                    style={{
+                      width: '100%', padding: '14px 16px', borderRadius: 14,
+                      border: `1.5px solid ${THEME.border}`, background: THEME.cardBg,
+                      fontSize: 15, fontFamily: THEME.fontBody, color: THEME.text,
+                      outline: 'none', boxSizing: 'border-box',
+                      transition: 'border-color 0.2s, box-shadow 0.2s',
+                    }}
+                    onFocus={e => { e.target.style.borderColor = THEME.lavender; e.target.style.boxShadow = `0 0 0 3px ${THEME.lavender}22`; }}
+                    onBlur={e => { e.target.style.borderColor = THEME.border; e.target.style.boxShadow = 'none'; }}
+                  />
+                  <div style={{ fontSize: 11, color: THEME.textFaint, marginTop: 6, paddingLeft: 2, fontStyle: 'italic' }}>Add a last name or nickname to avoid duplicates</div>
+                </div>
+
+                {/* Tags — tappable presets */}
+                <div style={{ borderTop: `1px solid ${THEME.border}`, paddingTop: 16, marginBottom: 24 }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, margin: '0 0 12px' }}>
+                    <h3 style={{ fontSize: 16, fontWeight: 800, margin: 0, fontFamily: THEME.fontDisplay, color: THEME.text }}>Tags</h3>
+                    <span style={{ fontSize: 12, color: THEME.textFaint, fontWeight: 500 }}>optional</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {TAG_PRESETS.map(tag => {
+                      const active = newKitTags.includes(tag);
+                      return (
+                        <button key={tag} onClick={() => setNewKitTags(prev => active ? prev.filter(t => t !== tag) : [...prev, tag])} style={{
+                          background: active ? `linear-gradient(135deg, ${THEME.pink}18, ${THEME.purple}15)` : THEME.cardBg,
+                          border: `1.5px solid ${active ? THEME.lavender : THEME.border}`,
+                          borderRadius: THEME.radiusPill, padding: '8px 16px', fontSize: 12, fontWeight: 600,
+                          color: active ? THEME.purpleDark : THEME.textMuted,
+                          cursor: 'pointer', fontFamily: THEME.fontBody, transition: 'all 0.15s ease',
+                        }}>
+                          {active && <span style={{ marginRight: 4 }}>&#x2713;</span>}{tag}
+                        </button>
+                      );
+                    })}
+                    <button onClick={() => {
+                      const tag = prompt("Enter a custom tag:");
+                      if (tag?.trim() && !newKitTags.includes(tag.trim())) setNewKitTags(prev => [...prev, tag.trim()]);
+                    }} style={{
+                      background: 'none', border: `1.5px dashed ${THEME.textFaint}55`,
+                      borderRadius: THEME.radiusPill, padding: '8px 16px', fontSize: 12, fontWeight: 600,
+                      color: THEME.textFaint, cursor: 'pointer', fontFamily: THEME.fontBody,
+                    }}>+ Custom</button>
+                  </div>
+                  {/* Custom tags (non-preset) shown as removable pills */}
+                  {newKitTags.filter(t => !TAG_PRESETS.includes(t)).length > 0 && (
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
+                      {newKitTags.filter(t => !TAG_PRESETS.includes(t)).map(tag => (
+                        <div key={tag} style={{ background: `${THEME.lavender}18`, border: `1px solid ${THEME.lavender}44`, borderRadius: THEME.radiusPill, padding: '6px 14px', fontSize: 12, fontWeight: 600, color: THEME.purpleDark, display: 'flex', alignItems: 'center', gap: 6 }}>
+                          {tag}
+                          <span onClick={() => setNewKitTags(prev => prev.filter(t2 => t2 !== tag))} style={{ cursor: 'pointer', fontSize: 14, color: THEME.textFaint, lineHeight: 1 }}>&times;</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Buttons */}
+                <button
+                  disabled={!newKitName.trim()}
+                  onClick={() => {
+                    const newId = customers.length > 0 ? Math.max(...customers.map(c => c.id)) + 1 : 1;
+                    setCustomers(prev => [...prev, {
+                      id: newId, name: newKitName.trim(),
+                      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                      scanComplete: false, outcome: null, outcomeFingers: [], overrides: {}, changelog: [],
+                      manual: false, mm: {}, coinMm: {}, borderline: {}, photos: {}, brands: [], tags: [...newKitTags],
+                    }]);
+                    setNewKitName(""); setNewKitTags([]); setShowCreateKit(false);
+                  }}
+                  style={{
+                    width: '100%', padding: 16, marginBottom: 10,
+                    background: newKitName.trim() ? `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})` : THEME.border,
+                    border: 'none', borderRadius: THEME.radiusPill, color: 'white', fontSize: 15, fontWeight: 700,
+                    cursor: newKitName.trim() ? 'pointer' : 'default', fontFamily: THEME.fontBody,
+                    boxShadow: newKitName.trim() ? `0 4px 16px rgba(232,98,154,0.25)` : 'none',
+                    position: 'relative', overflow: 'hidden', opacity: newKitName.trim() ? 1 : 0.4,
+                    transition: 'opacity 0.2s, box-shadow 0.2s',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  }}
+                >
+                  <span style={{ fontSize: 18, fontWeight: 400 }}>+</span> Create SizeKit
+                  {newKitName.trim() && <div style={{ position: 'absolute', top: 0, left: 0, width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)', animation: 'shimmer 3s ease-in-out infinite' }} />}
+                </button>
+                <button
+                  onClick={() => { setShowCreateKit(false); setNewKitName(""); setNewKitTags([]); }}
+                  style={{
+                    width: '100%', padding: 14, background: THEME.cardBg, border: `1.5px solid ${THEME.border}`,
+                    borderRadius: THEME.radiusPill, color: THEME.textMuted, fontSize: 14, fontWeight: 600,
+                    cursor: 'pointer', fontFamily: THEME.fontBody,
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+            </div>
+          </div>
+        </>
+        );
+      })()}
     </div>
   );
 }
