@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 
 const FINGERS = ["Thumb", "Index", "Middle", "Ring", "Pinky"];
+const TAG_PRESETS = ["Friends & family", "Shopify", "Etsy", "Test"];
 const OVERRIDE_REASONS = ["Brand runs small", "Brand runs large", "Customer preference", "Doesn't look right", "Other"];
 
 const THEME = {
@@ -80,6 +81,8 @@ function NailShapeLarge({ showOverlay = false }) {
 const MOCK_CUSTOMERS = [
   {
     id: 1, name: "Sarah Mitchell", date: "Feb 14, 2026", scanComplete: true, outcome: null, outcomeFingers: [], overrides: {}, changelog: [], manual: false,
+    scans: [{ id: 1, date: "Feb 14, 2026", status: "active" }],
+    notes: [{ id: 1, date: "Feb 14, 2026", text: "First-time client, referred by Jessica. Prefers natural look." }],
     mm: { left: { Thumb: 12.1, Index: 9.8, Middle: 9.5, Ring: 9.1, Pinky: 6.8 }, right: { Thumb: 12.4, Index: 9.4, Middle: 9.8, Ring: 9.3, Pinky: 6.8 } },
     coinMm: { left: { Thumb: 12.3, Index: 9.7, Middle: 9.6, Ring: 9.0, Pinky: 6.9 }, right: { Thumb: 12.2, Index: 9.5, Middle: 9.7, Ring: 9.4, Pinky: 6.7 } },
     borderline: { "left-Middle": 5, "right-Ring": 5 },
@@ -91,6 +94,7 @@ const MOCK_CUSTOMERS = [
   },
   {
     id: 2, name: "Jessica Torres", date: "Feb 13, 2026", scanComplete: true, outcome: "perfect", outcomeFingers: [], overrides: {}, changelog: [], manual: false,
+    scans: [{ id: 1, date: "Feb 13, 2026", status: "active" }],
     mm: { left: { Thumb: 11.9, Index: 9.2, Middle: 9.6, Ring: 8.9, Pinky: 7.2 }, right: { Thumb: 12.4, Index: 9.4, Middle: 9.5, Ring: 9.0, Pinky: 7.0 } },
     coinMm: { left: { Thumb: 11.8, Index: 9.3, Middle: 9.5, Ring: 9.0, Pinky: 7.1 }, right: { Thumb: 12.3, Index: 9.5, Middle: 9.4, Ring: 9.1, Pinky: 7.1 } },
     borderline: { "right-Ring": 7 },
@@ -106,11 +110,17 @@ const MOCK_CUSTOMERS = [
   },
   {
     id: 3, name: "Amanda Chen", date: "Feb 14, 2026", scanComplete: false, outcome: null, outcomeFingers: [], overrides: {}, changelog: [], manual: false,
+    scans: [{ id: 1, date: "Feb 14, 2026", status: "pending" }],
     mm: { left: {}, right: {} }, coinMm: { left: {}, right: {} }, borderline: {},
     brands: [{ name: "PLA Tips", shape: "Coffin", variant: "Short", left: {}, right: {} }],
   },
   {
     id: 4, name: "Brianna Lopez", date: "Feb 12, 2026", scanComplete: true, outcome: "close",
+    scans: [{ id: 1, date: "Feb 12, 2026", status: "active" }],
+    notes: [
+      { id: 1, date: "Feb 10, 2026", text: "Left ring finger runs small — keep an eye on this." },
+      { id: 2, date: "Feb 12, 2026", text: "Rescanned after initial fit issue. Much better results." },
+    ],
     outcomeFingers: [{ hand: "left", finger: "Ring", direction: "small" }],
     overrides: { "left-Ring-Supplies by Chloe": { newSize: 8, reason: "corrected" } }, changelog: [], manual: false,
     mm: { left: { Thumb: 12.6, Index: 9.1, Middle: 9.7, Ring: 8.6, Pinky: 6.9 }, right: { Thumb: 12.5, Index: 9.2, Middle: 9.6, Ring: 8.7, Pinky: 7.0 } },
@@ -128,6 +138,7 @@ const MOCK_CUSTOMERS = [
   },
   {
     id: 5, name: "Taylor Kim", date: "Feb 10, 2026", scanComplete: true, outcome: null, outcomeFingers: [], overrides: {}, changelog: [], manual: false,
+    scans: [{ id: 1, date: "Feb 10, 2026", status: "active" }],
     mm: { left: { Thumb: 12.0, Index: 9.0, Middle: 9.4, Ring: 8.8, Pinky: 6.7 }, right: { Thumb: 12.1, Index: 9.1, Middle: 9.3, Ring: 8.9, Pinky: 6.8 } },
     coinMm: { left: { Thumb: 12.1, Index: 9.1, Middle: 9.3, Ring: 8.9, Pinky: 6.8 }, right: { Thumb: 12.0, Index: 9.0, Middle: 9.4, Ring: 8.8, Pinky: 6.7 } },
     borderline: {},
@@ -146,6 +157,7 @@ const MOCK_CUSTOMERS = [
   },
   {
     id: 6, name: "Destiny Williams", date: "Feb 11, 2026", scanComplete: true, outcome: "perfect", outcomeFingers: [], overrides: {}, changelog: [], manual: false,
+    scans: [{ id: 1, date: "Feb 11, 2026", status: "active" }],
     mm: { left: { Thumb: 11.5, Index: 9.3, Middle: 9.1, Ring: 8.7, Pinky: 7.0 }, right: { Thumb: 11.6, Index: 9.2, Middle: 9.0, Ring: 8.8, Pinky: 7.1 } },
     coinMm: { left: { Thumb: 11.5, Index: 9.3, Middle: 9.1, Ring: 8.7, Pinky: 7.0 }, right: { Thumb: 11.6, Index: 9.2, Middle: 9.0, Ring: 8.8, Pinky: 7.1 } },
     borderline: {},
@@ -157,6 +169,7 @@ const MOCK_CUSTOMERS = [
   },
   {
     id: 7, name: "Mia Ramirez", date: "Feb 9, 2026", scanComplete: true, outcome: null, outcomeFingers: [], overrides: {}, changelog: [], manual: false,
+    scans: [{ id: 1, date: "Feb 9, 2026", status: "active" }],
     mm: { left: { Thumb: 12.8, Index: 10.1, Middle: 9.9, Ring: 9.5, Pinky: 7.4 }, right: { Thumb: 12.7, Index: 10.0, Middle: 9.8, Ring: 9.4, Pinky: 7.3 } },
     coinMm: { left: { Thumb: 12.8, Index: 10.1, Middle: 9.9, Ring: 9.5, Pinky: 7.4 }, right: { Thumb: 12.7, Index: 10.0, Middle: 9.8, Ring: 9.4, Pinky: 7.3 } },
     borderline: { "left-Index": 4 },
@@ -168,6 +181,7 @@ const MOCK_CUSTOMERS = [
   },
   {
     id: 8, name: "Kayla Washington", date: "Feb 8, 2026", scanComplete: true, outcome: "off",
+    scans: [{ id: 1, date: "Feb 8, 2026", status: "active" }],
     outcomeFingers: [{ hand: "right", finger: "Thumb", direction: "small" }, { hand: "right", finger: "Pinky", direction: "big" }],
     overrides: {}, changelog: [], manual: false,
     mm: { left: { Thumb: 11.2, Index: 8.8, Middle: 9.2, Ring: 8.5, Pinky: 6.5 }, right: { Thumb: 11.3, Index: 8.9, Middle: 9.1, Ring: 8.6, Pinky: 6.6 } },
@@ -181,6 +195,7 @@ const MOCK_CUSTOMERS = [
   },
   {
     id: 9, name: "Lauren Davis", date: "Feb 7, 2026", scanComplete: true, outcome: null, outcomeFingers: [], overrides: {}, changelog: [], manual: true,
+    scans: [{ id: 1, date: "Feb 7, 2026", status: "active" }],
     mm: { left: { Thumb: 0, Index: 0, Middle: 0, Ring: 0, Pinky: 0 }, right: { Thumb: 0, Index: 0, Middle: 0, Ring: 0, Pinky: 0 } },
     coinMm: { left: { Thumb: 0, Index: 0, Middle: 0, Ring: 0, Pinky: 0 }, right: { Thumb: 0, Index: 0, Middle: 0, Ring: 0, Pinky: 0 } },
     borderline: {},
@@ -250,13 +265,13 @@ export default function App() {
 
   // New Barbie redesign states
   const [searchFocused, setSearchFocused] = useState(false);
-  const [prefsOpen, setPrefsOpen] = useState(false);
-  const [fitPref, setFitPref] = useState("snug");
   const [curvature, setCurvature] = useState("normal");
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < THEME.mobileBreak : false);
   const [deckOpen, setDeckOpen] = useState(false);
   const [scanHistoryOpen, setScanHistoryOpen] = useState(false);
-  const [customerNotes, setCustomerNotes] = useState("");
+  const [notesOpen, setNotesOpen] = useState(false);
+  const [newNoteText, setNewNoteText] = useState("");
+  const [scanPreview, setScanPreview] = useState(null);
   const [customerTags, setCustomerTags] = useState(["Friends & family"]);
   const [showCreateKit, setShowCreateKit] = useState(false);
   const [newKitName, setNewKitName] = useState("");
@@ -745,18 +760,12 @@ export default function App() {
                   <span style={{ fontSize: 12, fontWeight: 700, color: '#4ade80' }}>Scan complete</span>
                 </div>
               )}
-              {/* Preference tags */}
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
-                <div style={{ background: 'rgba(168,85,247,0.15)', border: '1.5px solid rgba(168,85,247,0.35)', borderRadius: THEME.radiusPill, padding: '5px 16px', fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.8)', fontFamily: THEME.fontBody }}>
-                  {fitPref === 'snug' ? 'Snug fit' : fitPref === 'just-right' ? 'Just right fit' : 'Loose fit'}
-                </div>
+              {/* Curvature tag */}
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: 12 }}>
                 <div style={{ background: 'rgba(232,98,154,0.1)', border: '1.5px solid rgba(232,98,154,0.4)', borderRadius: THEME.radiusPill, padding: '5px 16px', fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.8)', fontFamily: THEME.fontBody }}>
                   {curvature === 'flat' ? 'Flat' : curvature === 'normal' ? 'Normal' : 'C-curve'} curvature
                 </div>
               </div>
-              <button onClick={() => setPrefsOpen(true)} style={{ background: 'none', border: 'none', fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: THEME.fontBody, marginTop: 8, textDecoration: 'underline', textUnderlineOffset: 3 }}>
-                Edit preferences
-              </button>
             </div>
           </CosmicBg>
 
@@ -801,7 +810,7 @@ export default function App() {
                             const photoKey = `${hand}-${finger}`;
                             const hasPhoto = sel.photos?.[photoKey];
                             return (
-                              <button key={finger} onClick={() => openFinger(hand, finger, sel.brands[0]?.name)} style={{
+                              <button key={finger} onClick={() => setScanPreview({ hand, finger })} style={{
                                 textAlign: 'center', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: THEME.fontBody,
                               }}>
                                 <div style={{
@@ -814,7 +823,7 @@ export default function App() {
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={THEME.lavender} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
                                   )}
                                 </div>
-                                <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textFaint, marginTop: 4, textTransform: 'uppercase' }}>{finger.slice(0, 2)}</div>
+                                <div style={{ fontSize: 9, fontWeight: 700, color: THEME.textFaint, marginTop: 4 }}>{finger}</div>
                               </button>
                             );
                           })}
@@ -823,6 +832,25 @@ export default function App() {
                     ))}
                   </div>
                 )}
+
+                {/* Pending rescan banner */}
+                {sel.scans?.some(s => s.status === "pending") && (() => {
+                  const pending = sel.scans.find(s => s.status === "pending");
+                  return (
+                    <div style={{ background: '#fffbeb', borderRadius: THEME.radiusCard, padding: '12px 14px', border: '1px solid #fde68a', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: '#92400e', marginBottom: 2 }}>Rescan pending</div>
+                        <div style={{ fontSize: 11, color: '#a16207', display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>sizekit.co/scan/{sel.id}/{pending.id}</span>
+                        </div>
+                      </div>
+                      <button onClick={() => navigator.clipboard.writeText(`https://sizekit.co/scan/${sel.id}/${pending.id}`)} style={{ background: `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})`, border: 'none', borderRadius: 10, padding: '6px 12px', fontSize: 10, fontWeight: 700, color: 'white', cursor: 'pointer', fontFamily: THEME.fontBody, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                        Copy
+                      </button>
+                    </div>
+                  );
+                })()}
 
                 {/* Sizes section */}
                 <h2 style={{ fontSize: 22, fontWeight: 900, margin: '0 0 4px', fontFamily: THEME.fontDisplay, fontStyle: 'italic' }}>Sizes</h2>
@@ -836,19 +864,8 @@ export default function App() {
                   <>
                     {/* Empty state — fresh scan, no brands */}
                     <p style={{ fontSize: 13, color: THEME.textFaint, margin: '0 0 20px', lineHeight: 1.5 }}>
-                      {sel.name.split(" ")[0]}'s scan looks great. Add a brand to generate their perfect sizes.
+                      Add a brand to generate sizes.
                     </p>
-                    <div style={{
-                      background: THEME.cardBg, borderRadius: THEME.radiusCard, padding: '28px 20px',
-                      textAlign: 'center', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', marginBottom: 16,
-                      border: `1.5px dashed ${THEME.lavender}44`,
-                    }}>
-                      <div style={{ width: 48, height: 48, borderRadius: 14, background: `linear-gradient(135deg, ${THEME.pinkLight}33, ${THEME.lavender}33)`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={THEME.pink} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 14.66V20a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2h5.34"/><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"/></svg>
-                      </div>
-                      <div style={{ fontSize: 17, fontWeight: 800, color: THEME.text, marginBottom: 4, fontFamily: THEME.fontDisplay, fontStyle: 'italic' }}>No brands yet</div>
-                      <div style={{ fontSize: 13, color: THEME.textMuted, lineHeight: 1.5 }}>Add a brand to generate sizes from this scan.</div>
-                    </div>
                   </>
                 ) : (
                   <>
@@ -881,7 +898,18 @@ export default function App() {
                 </button>
 
                 {/* Rescan button - full width dark */}
-                <button style={{
+                <button onClick={() => {
+                  const today = new Date();
+                  const todayFormatted = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                  setCustomers(prev => prev.map(c => {
+                    if (c.id !== sel.id) return c;
+                    const scans = c.scans || [];
+                    const hasPending = scans.some(s => s.status === "pending");
+                    if (hasPending) return c;
+                    const newId = Math.max(...scans.map(s => s.id), 0) + 1;
+                    return { ...c, scans: [...scans, { id: newId, date: todayFormatted, status: "pending" }] };
+                  }));
+                }} style={{
                   width: '100%', padding: 16, background: THEME.cosmic, border: 'none', borderRadius: THEME.radiusPill,
                   fontSize: 14, fontWeight: 700, color: 'white', cursor: 'pointer', fontFamily: THEME.fontBody,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 24,
@@ -901,49 +929,210 @@ export default function App() {
                   </button>
                   {scanHistoryOpen && (
                     <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      <div style={{ background: THEME.cardBg, borderRadius: 14, padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: `1px solid ${THEME.border}` }}>
-                        <div>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: THEME.text }}>{sel.date}</div>
-                          <div style={{ fontSize: 11, color: THEME.textFaint, marginTop: 2 }}>10 fingers captured</div>
+                      {(sel.scans || []).slice().sort((a, b) => b.id - a.id).map(scan => (
+                        <div key={scan.id} style={{ background: THEME.cardBg, borderRadius: 14, padding: '12px 14px', border: `1px solid ${scan.status === "pending" ? '#fde68a' : THEME.border}` }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: THEME.text }}>{scan.date}</div>
+                              <div style={{ fontSize: 11, color: THEME.textFaint, marginTop: 2 }}>
+                                {scan.status === "active" ? "10 fingers captured" : scan.status === "pending" ? "Waiting for scan" : "10 fingers captured"}
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              {scan.status === "active" && (
+                                <div style={{ fontSize: 10, fontWeight: 700, color: THEME.green, background: THEME.greenBg, padding: '3px 10px', borderRadius: THEME.radiusPill, border: `1px solid ${THEME.greenBd}` }}>Active</div>
+                              )}
+                              {scan.status === "pending" && (
+                                <div style={{ fontSize: 10, fontWeight: 700, color: '#92400e', background: '#fffbeb', padding: '3px 10px', borderRadius: THEME.radiusPill, border: '1px solid #fde68a' }}>Pending</div>
+                              )}
+                              {scan.status === "completed" && (
+                                <button onClick={() => {
+                                  setCustomers(prev => prev.map(c => {
+                                    if (c.id !== sel.id) return c;
+                                    const prevActive = c.scans.find(s => s.status === "active");
+                                    const newScans = c.scans.map(s => {
+                                      if (s.id === scan.id) return { ...s, status: "active" };
+                                      if (s.status === "active") return { ...s, status: "completed", _savedData: { mm: c.mm, coinMm: c.coinMm, borderline: c.borderline, photos: c.photos, date: c.date } };
+                                      return s;
+                                    });
+                                    const reactivated = c.scans.find(s => s.id === scan.id);
+                                    const restored = reactivated._savedData || {};
+                                    return {
+                                      ...c,
+                                      scans: newScans,
+                                      date: restored.date || reactivated.date,
+                                      mm: restored.mm || c.mm,
+                                      coinMm: restored.coinMm || c.coinMm,
+                                      borderline: restored.borderline || c.borderline,
+                                      photos: restored.photos || c.photos,
+                                    };
+                                  }));
+                                }} style={{ fontSize: 10, fontWeight: 700, color: THEME.purpleDark, background: `${THEME.lavender}22`, padding: '4px 10px', borderRadius: THEME.radiusPill, border: `1px solid ${THEME.lavender}44`, cursor: 'pointer', fontFamily: THEME.fontBody }}>
+                                  Use this scan
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          {scan.status === "pending" && (
+                            <div style={{ marginTop: 10 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fffbeb', borderRadius: 10, padding: '8px 10px', border: '1px solid #fde68a' }}>
+                                <div style={{ width: 24, height: 24, borderRadius: 6, background: `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                                </div>
+                                <div style={{ flex: 1, fontSize: 11, color: THEME.purpleDark, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'monospace', fontWeight: 600 }}>sizekit.co/scan/{sel.id}/{scan.id}</div>
+                                <button onClick={() => navigator.clipboard.writeText(`https://sizekit.co/scan/${sel.id}/${scan.id}`)} style={{ background: `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})`, border: 'none', borderRadius: 8, padding: '5px 10px', fontSize: 10, fontWeight: 700, color: 'white', cursor: 'pointer', fontFamily: THEME.fontBody, whiteSpace: 'nowrap' }}>Copy</button>
+                              </div>
+                              <button onClick={() => {
+                                setCustomers(prev => prev.map(c => {
+                                  if (c.id !== sel.id) return c;
+                                  const prevActive = c.scans.find(s => s.status === "active");
+                                  const newScans = c.scans.map(s => {
+                                    if (s.id === scan.id) return { ...s, status: "active" };
+                                    if (s.status === "active") return { ...s, status: "completed", _savedData: { mm: c.mm, coinMm: c.coinMm, borderline: c.borderline, photos: c.photos, date: c.date } };
+                                    return s;
+                                  });
+                                  // Generate slight variations of existing mm data for the new scan
+                                  const vary = (obj) => {
+                                    const result = {};
+                                    for (const [k, v] of Object.entries(obj || {})) {
+                                      if (typeof v === 'object') result[k] = vary(v);
+                                      else result[k] = +(v + (Math.random() * 0.4 - 0.2)).toFixed(1);
+                                    }
+                                    return result;
+                                  };
+                                  return {
+                                    ...c,
+                                    scans: newScans,
+                                    scanComplete: true,
+                                    date: scan.date,
+                                    mm: vary(c.mm),
+                                    coinMm: vary(c.coinMm),
+                                    borderline: c.borderline,
+                                    photos: c.photos,
+                                  };
+                                }));
+                              }} style={{ marginTop: 8, width: '100%', padding: '8px 12px', background: '#f59e0b', border: 'none', borderRadius: 10, fontSize: 11, fontWeight: 700, color: 'white', cursor: 'pointer', fontFamily: THEME.fontBody }}>
+                                Complete scan (demo)
+                              </button>
+                            </div>
+                          )}
                         </div>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: THEME.green, background: THEME.greenBg, padding: '3px 10px', borderRadius: THEME.radiusPill, border: `1px solid ${THEME.greenBd}` }}>Active</div>
-                      </div>
+                      ))}
                     </div>
                   )}
                 </div>
 
-                {/* Tags section */}
+                {/* Tags section — tappable presets */}
                 <div style={{ borderTop: `1px solid ${THEME.border}`, paddingTop: 16, marginBottom: 20 }}>
                   <h3 style={{ fontSize: 16, fontWeight: 800, margin: '0 0 10px', fontFamily: THEME.fontDisplay, color: THEME.text }}>Tags</h3>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    {(sel.tags || []).map((tag, i) => (
-                      <div key={i} style={{ background: `${THEME.lavender}18`, border: `1px solid ${THEME.lavender}44`, borderRadius: THEME.radiusPill, padding: '6px 14px', fontSize: 12, fontWeight: 600, color: THEME.purpleDark, display: 'flex', alignItems: 'center', gap: 6 }}>
-                        {tag}
-                        <span onClick={() => setCustomers(prev => prev.map(c => c.id === sel.id ? { ...c, tags: c.tags.filter((_, ti) => ti !== i) } : c))} style={{ cursor: 'pointer', fontSize: 14, color: THEME.textFaint, lineHeight: 1 }}>&times;</span>
-                      </div>
-                    ))}
+                    {TAG_PRESETS.map(tag => {
+                      const active = (sel.tags || []).includes(tag);
+                      return (
+                        <button key={tag} onClick={() => setCustomers(prev => prev.map(c => {
+                          if (c.id !== sel.id) return c;
+                          const tags = c.tags || [];
+                          return { ...c, tags: active ? tags.filter(t => t !== tag) : [...tags, tag] };
+                        }))} style={{
+                          background: active ? `linear-gradient(135deg, ${THEME.pink}18, ${THEME.purple}15)` : THEME.cardBg,
+                          border: `1.5px solid ${active ? THEME.lavender : THEME.border}`,
+                          borderRadius: THEME.radiusPill, padding: '8px 16px', fontSize: 12, fontWeight: 600,
+                          color: active ? THEME.purpleDark : THEME.textMuted,
+                          cursor: 'pointer', fontFamily: THEME.fontBody, transition: 'all 0.15s ease',
+                        }}>
+                          {active && <span style={{ marginRight: 4 }}>&#x2713;</span>}{tag}
+                        </button>
+                      );
+                    })}
                     <button onClick={() => {
-                      const tag = prompt("Add a tag:");
-                      if (tag?.trim()) setCustomers(prev => prev.map(c => c.id === sel.id ? { ...c, tags: [...(c.tags || []), tag.trim()] } : c));
-                    }} style={{ background: 'none', border: `1.5px dashed ${THEME.textFaint}55`, borderRadius: THEME.radiusPill, padding: '6px 14px', fontSize: 12, fontWeight: 600, color: THEME.textFaint, cursor: 'pointer', fontFamily: THEME.fontBody }}>+ Tag</button>
+                      const tag = prompt("Enter a custom tag:");
+                      if (tag?.trim() && !(sel.tags || []).includes(tag.trim())) setCustomers(prev => prev.map(c => c.id === sel.id ? { ...c, tags: [...(c.tags || []), tag.trim()] } : c));
+                    }} style={{
+                      background: 'none', border: `1.5px dashed ${THEME.textFaint}55`,
+                      borderRadius: THEME.radiusPill, padding: '8px 16px', fontSize: 12, fontWeight: 600,
+                      color: THEME.textFaint, cursor: 'pointer', fontFamily: THEME.fontBody,
+                    }}>+ Custom</button>
                   </div>
+                  {/* Custom tags (non-preset) shown as removable pills */}
+                  {(sel.tags || []).filter(t => !TAG_PRESETS.includes(t)).length > 0 && (
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
+                      {(sel.tags || []).filter(t => !TAG_PRESETS.includes(t)).map(tag => (
+                        <div key={tag} style={{ background: `${THEME.lavender}18`, border: `1px solid ${THEME.lavender}44`, borderRadius: THEME.radiusPill, padding: '6px 14px', fontSize: 12, fontWeight: 600, color: THEME.purpleDark, display: 'flex', alignItems: 'center', gap: 6 }}>
+                          {tag}
+                          <span onClick={() => setCustomers(prev => prev.map(c => c.id === sel.id ? { ...c, tags: (c.tags || []).filter(t => t !== tag) } : c))} style={{ cursor: 'pointer', fontSize: 14, color: THEME.textFaint, lineHeight: 1 }}>&times;</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                {/* Notes section */}
+                {/* Notes section - collapsible */}
                 <div style={{ borderTop: `1px solid ${THEME.border}`, paddingTop: 16, marginBottom: 20 }}>
-                  <h3 style={{ fontSize: 16, fontWeight: 800, margin: '0 0 10px', fontFamily: THEME.fontDisplay, color: THEME.text }}>Notes</h3>
-                  <textarea
-                    value={customerNotes}
-                    onChange={e => setCustomerNotes(e.target.value)}
-                    placeholder="Add notes about this customer..."
-                    style={{
-                      width: '100%', minHeight: 80, padding: '12px 14px', borderRadius: 14,
-                      border: `1.5px solid ${THEME.border}`, background: THEME.cardBg,
-                      fontSize: 13, fontFamily: THEME.fontBody, color: THEME.text,
-                      outline: 'none', resize: 'vertical', boxSizing: 'border-box',
-                      lineHeight: 1.5,
-                    }}
-                  />
+                  <button onClick={() => setNotesOpen(!notesOpen)} style={{
+                    width: '100%', background: 'none', border: 'none', padding: 0, display: 'flex',
+                    alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', fontFamily: THEME.fontBody,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <h3 style={{ fontSize: 16, fontWeight: 800, margin: 0, fontFamily: THEME.fontDisplay, color: THEME.text }}>Notes</h3>
+                      {(sel.notes || []).length > 0 && (
+                        <span style={{ fontSize: 11, fontWeight: 700, color: THEME.textFaint, background: `${THEME.border}`, padding: '2px 8px', borderRadius: THEME.radiusPill }}>{(sel.notes || []).length}</span>
+                      )}
+                    </div>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={THEME.textMuted} strokeWidth="2.5" strokeLinecap="round" style={{ transform: notesOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6"/></svg>
+                  </button>
+                  {notesOpen && (
+                    <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {/* Add note input */}
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <input
+                          value={newNoteText}
+                          onChange={e => setNewNoteText(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' && newNoteText.trim()) {
+                              const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                              const notes = sel.notes || [];
+                              const newId = Math.max(...notes.map(n => n.id), 0) + 1;
+                              setCustomers(prev => prev.map(c => c.id === sel.id ? { ...c, notes: [{ id: newId, date: today, text: newNoteText.trim() }, ...notes] } : c));
+                              setNewNoteText("");
+                            }
+                          }}
+                          placeholder="Add a note..."
+                          style={{
+                            flex: 1, padding: '10px 14px', borderRadius: 12,
+                            border: `1.5px solid ${THEME.border}`, background: THEME.cardBg,
+                            fontSize: 13, fontFamily: THEME.fontBody, color: THEME.text,
+                            outline: 'none', boxSizing: 'border-box',
+                          }}
+                        />
+                        <button onClick={() => {
+                          if (!newNoteText.trim()) return;
+                          const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                          const notes = sel.notes || [];
+                          const newId = Math.max(...notes.map(n => n.id), 0) + 1;
+                          setCustomers(prev => prev.map(c => c.id === sel.id ? { ...c, notes: [{ id: newId, date: today, text: newNoteText.trim() }, ...notes] } : c));
+                          setNewNoteText("");
+                        }} style={{
+                          background: `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})`, border: 'none', borderRadius: 12,
+                          padding: '10px 16px', fontSize: 12, fontWeight: 700, color: 'white', cursor: 'pointer', fontFamily: THEME.fontBody, whiteSpace: 'nowrap',
+                        }}>Add</button>
+                      </div>
+                      {/* Note entries */}
+                      {(sel.notes || []).map(note => (
+                        <div key={note.id} style={{ background: THEME.cardBg, borderRadius: 14, padding: '12px 14px', border: `1px solid ${THEME.border}` }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textFaint }}>{note.date}</div>
+                            <button onClick={() => {
+                              setCustomers(prev => prev.map(c => c.id === sel.id ? { ...c, notes: (c.notes || []).filter(n => n.id !== note.id) } : c));
+                            }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, color: THEME.textFaint, lineHeight: 1, padding: '0 2px' }}>&times;</button>
+                          </div>
+                          <div style={{ fontSize: 13, color: THEME.text, lineHeight: 1.5 }}>{note.text}</div>
+                        </div>
+                      ))}
+                      {(sel.notes || []).length === 0 && (
+                        <div style={{ fontSize: 12, color: THEME.textFaint, fontStyle: 'italic', padding: '8px 0' }}>No notes yet.</div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Delete customer */}
@@ -1011,7 +1200,7 @@ export default function App() {
                                   return (
                                     <div key={finger} style={{ flex: 1, textAlign: 'center' }}>
                                       <div style={{ background: fl ? (fl.direction === "big" ? '#fef9c3' : '#fee2e2') : '#f9fafb', borderRadius: 8, padding: '5px 1px', marginBottom: 3, border: `2px solid ${fl ? (fl.direction === "big" ? '#eab308' : '#ef4444') : '#e4e4e7'}` }}>
-                                        <div style={{ fontSize: 7, fontWeight: 700, color: THEME.textFaint }}>{finger.slice(0, 3)}</div>
+                                        <div style={{ fontSize: 7, fontWeight: 700, color: THEME.textFaint }}>{finger}</div>
                                         <div style={{ fontSize: 14, fontWeight: 800 }}>{size}</div>
                                       </div>
                                       <div style={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
@@ -1089,55 +1278,104 @@ export default function App() {
 
 
       {/* Finger Detail Sheet */}
-      {fingerDetail && sel && <FingerSheet customer={sel} {...fingerDetail} onClose={dismissFinger} onConfirm={confirmFinger} onNavigate={(h, f) => { setFingerDetail({ hand: h, finger: f, brandName: fingerDetail.brandName }); setOverrideMode(false); }} reviewedFingers={reviewedFingers} customerId={selectedId} saveOverride={saveOverride} fitPref={fitPref} />}
+      {fingerDetail && sel && <FingerSheet customer={sel} {...fingerDetail} onClose={dismissFinger} onConfirm={confirmFinger} onNavigate={(h, f) => { setFingerDetail({ hand: h, finger: f, brandName: fingerDetail.brandName }); setOverrideMode(false); }} reviewedFingers={reviewedFingers} customerId={selectedId} saveOverride={saveOverride} />}
 
-      {/* Preferences Sheet */}
-      {prefsOpen && (
-        <>
-          <div onClick={() => setPrefsOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200, backdropFilter: 'blur(4px)' }} />
-          <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: THEME.cardBg, borderRadius: `${THEME.radiusSheet}px ${THEME.radiusSheet}px 0 0`, zIndex: 210, boxShadow: '0 -4px 30px rgba(0,0,0,0.12)', padding: '12px 24px 32px' }}>
-            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#d4d4d8', margin: '0 auto 20px' }} />
-            <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4, fontFamily: THEME.fontDisplay }}>Preferences</div>
-            <div style={{ fontSize: 13, color: THEME.textFaint, marginBottom: 20 }}>Customize sizing preferences for this customer.</div>
-
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: THEME.text, marginBottom: 10 }}>Fit Preference</div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {[{ key: 'snug', label: 'Snug' }, { key: 'just-right', label: 'Just right' }, { key: 'loose', label: 'Loose' }].map(o => (
-                  <button key={o.key} onClick={() => setFitPref(o.key)} style={{
-                    flex: 1, padding: '12px 8px', borderRadius: THEME.radiusCard,
-                    background: fitPref === o.key ? `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})` : THEME.cardBg,
-                    border: fitPref === o.key ? 'none' : `1.5px solid ${THEME.border}`,
-                    color: fitPref === o.key ? 'white' : THEME.text,
-                    fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: THEME.fontBody,
-                  }}>{o.label}</button>
-                ))}
+      {/* Scan Preview Sheet — photo + measurements, no brand sizing */}
+      {scanPreview && sel && (() => {
+        const { hand, finger } = scanPreview;
+        const photoKey = `${hand}-${finger}`;
+        const photoSrc = sel.photos?.[photoKey] || FINGER_PHOTOS[photoKey] || '/fingers/left-thumb.png';
+        const hasPhoto = !!sel.photos?.[photoKey];
+        const mm = sel.mm?.[hand]?.[finger];
+        const coinMm = sel.coinMm?.[hand]?.[finger];
+        const seq = [];
+        ["left", "right"].forEach(h => FINGERS.forEach(f => seq.push({ hand: h, finger: f })));
+        const currentIdx = seq.findIndex(s => s.hand === hand && s.finger === finger);
+        return (
+          <>
+            <div onClick={() => setScanPreview(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 90, backdropFilter: 'blur(4px)' }} />
+            <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: THEME.cardBg, borderRadius: `${THEME.radiusSheet}px ${THEME.radiusSheet}px 0 0`, zIndex: 100, maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 -4px 30px rgba(0,0,0,0.12)', padding: '12px 24px 32px' }}>
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: '#d4d4d8', margin: '0 auto 16px' }} />
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 4 }}>
+                <div>
+                  <div style={{ fontSize: 28, fontWeight: 900, color: THEME.text, fontFamily: THEME.fontDisplay, fontStyle: 'italic', lineHeight: 1.1 }}>{finger}</div>
+                  <div style={{ fontSize: 14, color: THEME.textMuted, fontWeight: 500, marginTop: 2 }}>{hand === "left" ? "Left" : "Right"} hand</div>
+                </div>
+                <button onClick={() => setScanPreview(null)} style={{ width: 36, height: 36, borderRadius: 18, background: THEME.border, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 4 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={THEME.textMuted} strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                </button>
               </div>
-            </div>
 
-            <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: THEME.text, marginBottom: 10 }}>Curvature</div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {[{ key: 'flat', label: 'Flat' }, { key: 'normal', label: 'Normal' }, { key: 'c-curve', label: 'C-curve' }].map(o => (
-                  <button key={o.key} onClick={() => setCurvature(o.key)} style={{
-                    flex: 1, padding: '12px 8px', borderRadius: THEME.radiusCard,
-                    background: curvature === o.key ? `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})` : THEME.cardBg,
-                    border: curvature === o.key ? 'none' : `1.5px solid ${THEME.border}`,
-                    color: curvature === o.key ? 'white' : THEME.text,
-                    fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: THEME.fontBody,
-                  }}>{o.label}</button>
-                ))}
+              {/* Finger nav — full names */}
+              <div style={{ marginTop: 12, marginBottom: 20 }}>
+                <div style={{ display: 'flex', gap: 3 }}>
+                  {seq.map((s, i) => {
+                    const isCurrent = i === currentIdx;
+                    return (
+                      <button key={i} onClick={() => setScanPreview({ hand: s.hand, finger: s.finger })} style={{
+                        flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                        background: 'none', border: 'none', padding: '4px 0', cursor: 'pointer',
+                        fontFamily: THEME.fontBody, marginRight: i === 4 ? 8 : 0,
+                      }}>
+                        <div style={{ width: '100%', height: 5, borderRadius: 3, background: isCurrent ? THEME.pink : `${THEME.lavender}33`, transition: 'background 0.2s', boxShadow: isCurrent ? `0 0 6px ${THEME.pink}55` : 'none' }} />
+                        <div style={{ fontSize: 7, fontWeight: 700, letterSpacing: 0.2, color: isCurrent ? THEME.pink : THEME.textFaint }}>{s.finger}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
+                  <div style={{ fontSize: 9, fontWeight: 600, color: THEME.textFaint, textTransform: 'uppercase', letterSpacing: 0.5, width: '50%', paddingLeft: 2 }}>Left</div>
+                  <div style={{ fontSize: 9, fontWeight: 600, color: THEME.textFaint, textTransform: 'uppercase', letterSpacing: 0.5, width: '50%', paddingLeft: 10 }}>Right</div>
+                </div>
               </div>
-            </div>
 
-            <button onClick={() => setPrefsOpen(false)} style={{
-              width: '100%', padding: 14, borderRadius: THEME.radiusCard, border: 'none',
-              background: `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})`,
-              color: 'white', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: THEME.fontBody,
-            }}>Save Preferences</button>
-          </div>
-        </>
-      )}
+              {/* Photo — no overlay label */}
+              <div style={{ borderRadius: THEME.radiusCard, overflow: 'hidden', background: `${THEME.lavender}15`, marginBottom: 16, aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {hasPhoto ? (
+                  <img src={photoSrc} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={`${THEME.lavender}66`} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                )}
+              </div>
+
+              {/* Measurements */}
+              {mm && (
+                <div style={{ background: THEME.border, borderRadius: THEME.radiusCard, padding: '16px 20px', marginBottom: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                    <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textFaint }}>Width</div>
+                    <div style={{ fontSize: 24, fontWeight: 900, color: THEME.text, fontFamily: THEME.fontDisplay }}>{mm}<span style={{ fontSize: 13, fontWeight: 600, color: THEME.textMuted, marginLeft: 2 }}>mm</span></div>
+                  </div>
+                  <div style={{ fontSize: 11, color: THEME.textFaint, marginTop: 6 }}>Coin used: US Quarter</div>
+                </div>
+              )}
+
+              {/* What makes a good capture — collapsed by default */}
+              <details style={{ marginBottom: 20 }}>
+                <summary style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '12px 0', listStyle: 'none', WebkitAppearance: 'none' }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={THEME.purpleDark} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: THEME.text }}>What makes a good capture</span>
+                </summary>
+                <div style={{ background: `${THEME.lavender}10`, borderRadius: THEME.radiusCard, padding: '14px 16px', border: `1px solid ${THEME.lavender}22`, marginTop: 4 }}>
+                  <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, color: THEME.textMuted, lineHeight: 1.8 }}>
+                    <li>Finger is rolled or not completely flat against the surface</li>
+                    <li>Dark environment or poor lighting conditions</li>
+                    <li>Low-resolution or blurry images</li>
+                  </ul>
+                  <div style={{ fontSize: 12, color: THEME.textMuted, lineHeight: 1.6, marginTop: 8 }}>
+                    If you notice any of these, consider reaching out to have the customer rescan with better lighting and flat finger placement.
+                  </div>
+                </div>
+              </details>
+
+              <button onClick={() => setScanPreview(null)} style={{
+                width: '100%', padding: 18, background: THEME.cosmic, border: 'none',
+                borderRadius: THEME.radiusPill, fontSize: 16, fontWeight: 700, color: 'white',
+                cursor: 'pointer', fontFamily: THEME.fontBody, boxShadow: '0 4px 16px rgba(14,10,26,0.3)',
+              }}>Done</button>
+            </div>
+          </>
+        );
+      })()}
 
       {/* Notifications Dropdown */}
       {notifOpen && (
@@ -1259,7 +1497,6 @@ export default function App() {
 
       {/* Create Size Kit Modal */}
       {showCreateKit && (() => {
-        const TAG_PRESETS = ["Friends & family", "Shopify", "Etsy", "Test"];
         return (
         <>
           <div onClick={() => { setShowCreateKit(false); setNewKitName(""); setNewKitTags([]); }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, backdropFilter: 'blur(6px)' }} />
@@ -1486,7 +1723,7 @@ function BrandSizeCard({ brand, brandIndex, customer, customerId, reviewedFinger
               </div>
             )}
           </div>
-          {brandIndex === 0 && <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textFaint, marginTop: 2 }}>Original</div>}
+          <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textFaint, marginTop: 2 }}>Sizes from {customer.date} scan</div>
         </div>
         <div style={{ position: 'relative' }}>
           <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', fontSize: 18, color: THEME.textFaint, lineHeight: 1 }}>{"\u22ee"}</button>
@@ -1565,7 +1802,7 @@ function BrandSizeCard({ brand, brandIndex, customer, customerId, reviewedFinger
                     {editing ? (
                       <div style={{ background: THEME.border, borderRadius: 12, padding: '4px 2px' }}>
                         <button onClick={() => onEditSize(brandIndex, hand, finger, displaySize + 1)} style={{ display: 'block', width: '100%', background: 'none', border: 'none', cursor: 'pointer', fontSize: 10, color: THEME.textFaint, fontFamily: THEME.fontBody, padding: '1px 0' }}>{"\u25b2"}</button>
-                        <div style={{ fontSize: 9, fontWeight: 700, color: THEME.pink, textTransform: 'uppercase', letterSpacing: 0.5 }}>{finger.slice(0, 3)}</div>
+                        <div style={{ fontSize: 8, fontWeight: 700, color: THEME.pink, letterSpacing: 0.3 }}>{finger}</div>
                         <div style={{ fontSize: 18, fontWeight: 900, color: isCorrected ? THEME.purple : THEME.text, lineHeight: 1.1 }}>{displaySize}</div>
                         <button onClick={() => onEditSize(brandIndex, hand, finger, Math.max(0, displaySize - 1))} style={{ display: 'block', width: '100%', background: 'none', border: 'none', cursor: 'pointer', fontSize: 10, color: THEME.textFaint, fontFamily: THEME.fontBody, padding: '1px 0' }}>{"\u25bc"}</button>
                       </div>
@@ -1628,7 +1865,7 @@ function OutcomeFlow({ customer, step, setStep, tempOutcome, setTempOutcome, tem
                   return (
                     <div key={finger} style={{ flex: 1, textAlign: 'center' }}>
                       <div style={{ background: fl ? (fl.direction === "big" ? '#fef9c3' : '#fee2e2') : THEME.cardBg, borderRadius: 8, padding: '5px 1px', marginBottom: 3, border: `2px solid ${fl ? (fl.direction === "big" ? '#eab308' : '#ef4444') : THEME.border}` }}>
-                        <div style={{ fontSize: 7, fontWeight: 700, color: THEME.textFaint }}>{finger.slice(0, 3)}</div>
+                        <div style={{ fontSize: 7, fontWeight: 700, color: THEME.textFaint }}>{finger}</div>
                         <div style={{ fontSize: 14, fontWeight: 800 }}>{size}</div>
                       </div>
                       <div style={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
@@ -1653,7 +1890,7 @@ function OutcomeFlow({ customer, step, setStep, tempOutcome, setTempOutcome, tem
 
 
 // ── Finger Detail Sheet ────────────────────────────────────
-function FingerSheet({ customer, hand, finger, brandName, onClose, onConfirm, onNavigate, reviewedFingers, customerId, saveOverride, fitPref }) {
+function FingerSheet({ customer, hand, finger, brandName, onClose, onConfirm, onNavigate, reviewedFingers, customerId, saveOverride }) {
   const brand = customer.brands.find(b => b.name === brandName);
   const size = brand?.[hand]?.[finger];
   const altSize = customer.borderline[`${hand}-${finger}`];
@@ -1676,7 +1913,6 @@ function FingerSheet({ customer, hand, finger, brandName, onClose, onConfirm, on
   const seq = [];
   ["left", "right"].forEach(h => FINGERS.forEach(f => seq.push({ hand: h, finger: f })));
   const currentIdx = seq.findIndex(s => s.hand === hand && s.finger === finger);
-  const FINGER_LABELS = { Thumb: "TH", Index: "IX", Middle: "MI", Ring: "RI", Pinky: "PI" };
 
   // Borderline size labels based on fit preference
   const smallSize = altSize ? Math.min(size, altSize) : null;
@@ -1730,10 +1966,9 @@ function FingerSheet({ customer, hand, finger, brandName, onClose, onConfirm, on
                     boxShadow: isCurrent ? `0 0 6px ${THEME.pink}55` : 'none',
                   }} />
                   <div style={{
-                    fontSize: 8, fontWeight: 700, letterSpacing: 0.3,
+                    fontSize: 7, fontWeight: 700, letterSpacing: 0.2,
                     color: isCurrent ? THEME.pink : (isReviewed ? THEME.green : THEME.textFaint),
-                    textTransform: 'uppercase',
-                  }}>{FINGER_LABELS[s.finger]}</div>
+                  }}>{s.finger}</div>
                 </button>
               );
             })}
