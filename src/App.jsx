@@ -34,6 +34,14 @@ const THEME = {
   mobileBreak: 520,
 };
 
+const CARD_PALETTES = [
+  { bg: 'linear-gradient(140deg, #F472B6 0%, #E8629A 40%, #C084FC 100%)', text: '#fff', badge: 'rgba(255,255,255,0.2)' },
+  { bg: 'linear-gradient(140deg, #D97AEB 0%, #A78BFA 50%, #C4B5FD 100%)', text: '#fff', badge: 'rgba(255,255,255,0.2)' },
+  { bg: 'linear-gradient(140deg, #818CF8 0%, #6D72E8 45%, #A78BFA 100%)', text: '#fff', badge: 'rgba(255,255,255,0.2)' },
+  { bg: 'linear-gradient(140deg, #6ECFBD 0%, #4ABEAA 45%, #6EE7B7 100%)', text: '#fff', badge: 'rgba(255,255,255,0.2)' },
+];
+const CARD_ROTATIONS = [-1.5, 1.2, -0.8, 1.8, -1.2, 0.9, -1.8, 1.5, -0.6];
+
 const FINGER_PHOTOS = {
   'left-Thumb': '/fingers/left-thumb.png',
   'left-Index': '/fingers/left-index.png',
@@ -256,7 +264,7 @@ export default function App() {
   const [addBrandOpen, setAddBrandOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [filter, setFilter] = useState("all");
-  const [showWelcome, setShowWelcome] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(false);
   const [reviewedFingers, setReviewedFingers] = useState({});
   const [addBrandStep, setAddBrandStep] = useState(1);
   const [addBrandName, setAddBrandName] = useState(null);
@@ -276,6 +284,7 @@ export default function App() {
   const [showCreateKit, setShowCreateKit] = useState(false);
   const [newKitName, setNewKitName] = useState("");
   const [newKitTags, setNewKitTags] = useState([]);
+  const [cardsReady, setCardsReady] = useState(false);
 
   // Inject CSS keyframe animations
   useEffect(() => {
@@ -310,10 +319,29 @@ export default function App() {
         80% { transform: translateY(-2px) scale(0.99); }
         100% { opacity: 1; transform: translateY(0) scale(1); }
       }
+      .customer-card:hover {
+        transform: rotate(0deg) translateY(-8px) scale(1.03) !important;
+        box-shadow: 0 16px 32px rgba(0,0,0,0.13) !important;
+        z-index: 100 !important;
+        transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease !important;
+      }
+      .customer-card:active {
+        transform: rotate(0deg) translateY(-2px) scale(0.98) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+        transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+      }
     `;
     document.head.appendChild(style);
     return () => document.head.removeChild(style);
   }, []);
+
+  // Card entrance trigger
+  useEffect(() => {
+    if (view === "allCustomers") {
+      setCardsReady(false);
+      requestAnimationFrame(() => requestAnimationFrame(() => setCardsReady(true)));
+    }
+  }, [view]);
 
   // Responsive listener
   useEffect(() => {
@@ -323,7 +351,7 @@ export default function App() {
   }, []);
 
   const sel = customers.find(c => c.id === selectedId);
-  const filtered = filter === "all" ? customers : filter === "pending" ? customers.filter(c => !c.scanComplete) : customers.filter(c => c.scanComplete);
+  const filtered = filter === "all" ? customers : filter === "ready" ? customers.filter(c => c.scanComplete && !c.outcome) : filter === "sized" ? customers.filter(c => c.scanComplete && !!c.outcome) : filter === "waiting" || filter === "pending" ? customers.filter(c => !c.scanComplete) : filter === "completed" ? customers.filter(c => c.scanComplete) : customers;
   const list = search.trim()
     ? filtered.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.brands.some(b => b.name.toLowerCase().includes(search.toLowerCase())))
     : filtered;
@@ -432,18 +460,10 @@ export default function App() {
       {/* ════════ HOME ════════ */}
       {view === "home" && (
         <div>
-          <CosmicBg padBottom={60}>
+          <CosmicBg padBottom={46}>
             <NavBar />
-            {/* Welcome section */}
-            <div style={{ padding: '0 24px', paddingTop: 16, paddingBottom: 10 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: THEME.pinkLight, marginBottom: 6 }}>HEY ROY</div>
-              <h1 style={{ margin: 0, fontSize: isMobile ? 28 : 34, fontWeight: 900, lineHeight: 1.15 }}>
-                <span style={{ fontFamily: THEME.fontDisplay, fontStyle: 'italic', color: THEME.pinkLight }}>Welcome back.</span>{' '}
-                <span style={{ fontFamily: THEME.fontDisplay, fontStyle: 'italic', color: 'white' }}>Here's your SizeKit.</span>
-              </h1>
-            </div>
             {/* Create Size Kit CTA */}
-            <div style={{ padding: '16px 24px 0' }}>
+            <div style={{ padding: '12px 24px 0' }}>
               <button onClick={() => setShowCreateKit(true)} style={{
                 width: '100%', padding: 18, background: `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})`,
                 border: 'none', borderRadius: THEME.radiusCard, color: 'white', fontSize: 16, fontWeight: 700,
@@ -459,20 +479,15 @@ export default function App() {
           <CreamSection>
             <div style={{ maxWidth: THEME.maxWidth, margin: '0 auto', padding: '28px 20px 0' }}>
 
+              {/* Ready to size — stacked cards */}
               {/* Attention Cards — Stacked Deck */}
               {needsReview.length > 0 && (() => {
                 const cards = needsReview.slice(0, 4);
-                const cardGradients = [
-                  'linear-gradient(140deg, #F472B6 0%, #E8629A 40%, #C084FC 100%)',
-                  'linear-gradient(140deg, #D97AEB 0%, #A78BFA 50%, #C4B5FD 100%)',
-                  'linear-gradient(140deg, #818CF8 0%, #6D72E8 45%, #A78BFA 100%)',
-                  'linear-gradient(140deg, #6ECFBD 0%, #4ABEAA 45%, #6EE7B7 100%)',
-                ];
                 const stackRotations = [-1.5, 2, -0.5, 1.2];
                 const fanRotations = [-2, 1.2, -0.6, 1.8];
                 const CARD_H = isMobile ? 138 : 148;
-                const PEEK = isMobile ? 40 : 44;
-                const GAP = 16;
+                const PEEK = isMobile ? 46 : 50;
+                const GAP = 18;
                 const collapsedH = CARD_H + (cards.length - 1) * PEEK;
                 const expandedH = cards.length * (CARD_H + GAP) - GAP;
                 return (
@@ -491,6 +506,7 @@ export default function App() {
                       cursor: deckOpen ? 'default' : 'pointer',
                     }} onClick={() => { if (!deckOpen) setDeckOpen(true); }}>
                       {cards.map((c, i) => {
+                        const p = CARD_PALETTES[i % CARD_PALETTES.length];
                         const isTop = i === 0;
                         const collapsed = {
                           top: i * PEEK,
@@ -514,7 +530,7 @@ export default function App() {
                             left: 0,
                             width: '100%',
                             height: CARD_H,
-                            background: cardGradients[i % cardGradients.length],
+                            background: p.bg,
                             borderRadius: 24, border: 'none', textAlign: 'left',
                             padding: isMobile ? '20px 22px' : '24px 28px',
                             cursor: 'pointer', fontFamily: THEME.fontBody, color: 'white', overflow: 'hidden',
@@ -535,13 +551,12 @@ export default function App() {
                                 </div>
                               </div>
                               <div style={{ fontSize: isMobile ? 22 : 26, fontWeight: 900, fontFamily: THEME.fontDisplay, fontStyle: 'italic', lineHeight: 1.1, marginBottom: 6, textShadow: '0 2px 12px rgba(0,0,0,0.15)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</div>
-                              <div style={{ fontSize: isMobile ? 12 : 13, opacity: 0.85, fontWeight: 500, letterSpacing: 0.2 }}>{c.brands[0]?.name ? `${c.brands[0].name} · ${c.brands[0].shape} · ${c.brands[0].variant}` : 'Scan complete · Ready for sizing'}</div>
+                              <div style={{ fontSize: isMobile ? 12 : 13, opacity: 0.85, fontWeight: 500, letterSpacing: 0.2 }}>{c.brands[0]?.name ? `${c.brands[0].name} · ${c.brands[0].shape}` : 'Scan complete · Ready for sizing'}</div>
                             </div>
                           </button>
                         );
                       })}
                     </div>
-                    {/* Fan out / collapse control */}
                     {deckOpen ? (
                       <button onClick={() => setDeckOpen(false)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, margin: '12px auto 0', background: THEME.cardBg, border: `1.5px solid ${THEME.border}`, borderRadius: THEME.radiusPill, fontSize: 12, fontWeight: 600, color: THEME.textMuted, cursor: 'pointer', fontFamily: THEME.fontBody, padding: '8px 20px', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={THEME.textMuted} strokeWidth="2" strokeLinecap="round"><path d="M18 15l-6-6-6 6"/></svg>
@@ -576,29 +591,55 @@ export default function App() {
                 <input type="text" value={search} onChange={e => setSearch(e.target.value)} onFocus={() => setSearchFocused(true)} onBlur={() => setSearchFocused(false)} placeholder="Search customers..." style={{ border: 'none', outline: 'none', background: 'none', flex: 1, fontSize: 14, fontFamily: THEME.fontBody, color: THEME.text }} />
               </div>
 
-              {/* Customer list */}
+              {/* Customer list — soft frosted cards */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {(search.trim() ? list : list.slice(0, 5)).map((c, i) => (
-                  <button key={c.id} onClick={() => open(c.id)} style={{
-                    display: 'flex', alignItems: 'center', gap: 12, width: '100%',
-                    background: THEME.cardBg, border: 'none', borderRadius: THEME.radiusCard,
-                    padding: '14px 16px', cursor: 'pointer', textAlign: 'left', fontFamily: THEME.fontBody,
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                    animation: `fadeUp 0.4s ease-out ${i * 0.05}s both`,
-                  }}>
-                    <div style={{ width: 42, height: 42, borderRadius: 14, background: c.manual ? THEME.border : `linear-gradient(135deg, ${THEME.pinkLight}, ${THEME.lavender})`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: c.manual ? THEME.textMuted : 'white', fontSize: 13, fontWeight: 800, flexShrink: 0 }}>{c.name.split(" ").map(n => n[0]).join("")}</div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
-                        {c.name}
-                        {c.manual && <span style={{ fontSize: 9, fontWeight: 700, color: THEME.textFaint, background: THEME.border, padding: '2px 6px', borderRadius: THEME.radiusPill }}>Manual</span>}
+                {(search.trim() ? list : list.slice(0, 5)).map((c, i) => {
+                  const status = !c.scanComplete ? "waiting" : !c.outcome ? "ready" : "sized";
+                  return (
+                    <button key={c.id} onClick={() => open(c.id)} style={{
+                      background: 'white',
+                      borderRadius: 16,
+                      padding: '14px 6px 14px 0',
+                      border: 'none',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      fontFamily: THEME.fontBody,
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      overflow: 'hidden',
+                      boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
+                      animation: `fadeUp 0.4s ease-out ${i * 0.05}s both`,
+                      position: 'relative',
+                    }}>
+                      {/* Gradient accent edge */}
+                      <div style={{
+                        position: 'absolute', left: 0, top: 0, bottom: 0, width: 4,
+                        background: `linear-gradient(180deg, ${THEME.pink}, ${THEME.purple})`,
+                        borderRadius: '4px 0 0 4px',
+                        opacity: 0.6,
+                      }} />
+                      <div style={{ width: 14, flexShrink: 0 }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{
+                          fontSize: 15, fontWeight: 700,
+                          color: THEME.text, lineHeight: 1.2, marginBottom: 3,
+                          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                        }}>
+                          {c.name}
+                        </div>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 600, color: THEME.textMuted }}>
+                          <span style={{
+                            width: 6, height: 6, borderRadius: 3, display: 'inline-block',
+                            background: status === "waiting" ? THEME.purple : status === "ready" ? THEME.pink : THEME.green,
+                          }} />
+                          {status === "waiting" ? "Waiting for scan" : status === "ready" ? "Ready to size" : "Sized"}
+                        </div>
                       </div>
-                      <div style={{ fontSize: 11, color: THEME.textFaint }}>{c.date}{c.brands[0] ? ` \u00b7 ${c.brands[0].name} \u00b7 ${c.brands[0].shape}` : ""}</div>
-                    </div>
-                    {!c.scanComplete && <div style={{ fontSize: 10, fontWeight: 700, color: THEME.purpleDark, background: THEME.lavender + '44', padding: '3px 10px', borderRadius: THEME.radiusPill }}>Waiting for scan</div>}
-                    {c.scanComplete && !c.outcome && <div style={{ fontSize: 10, fontWeight: 700, color: THEME.pink, background: THEME.pinkLight + '33', padding: '3px 10px', borderRadius: THEME.radiusPill }}>Ready to size</div>}
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4d4d8" strokeWidth="2" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
-                  </button>
-                ))}
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={THEME.textFaint} strokeWidth="2" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                  );
+                })}
                 {list.length === 0 && <div style={{ textAlign: 'center', padding: 40, color: THEME.textFaint, fontSize: 13 }}>No customers found</div>}
               </div>
 
@@ -643,24 +684,60 @@ export default function App() {
           </CosmicBg>
           <CreamSection>
             <div style={{ maxWidth: THEME.maxWidth, margin: '0 auto', padding: '24px 20px 0' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {needsReview.map((c, i) => (
-                  <button key={c.id} onClick={() => open(c.id)} style={{
-                    display: 'flex', alignItems: 'center', gap: 12, width: '100%',
-                    background: THEME.cardBg, border: 'none', borderRadius: THEME.radiusCard,
-                    padding: '14px 16px', cursor: 'pointer', textAlign: 'left', fontFamily: THEME.fontBody,
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                    animation: `fadeUp 0.4s ease-out ${i * 0.04}s both`,
-                  }}>
-                    <div style={{ width: 42, height: 42, borderRadius: 14, background: `linear-gradient(135deg, ${THEME.pinkLight}, ${THEME.lavender})`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 13, fontWeight: 800, flexShrink: 0 }}>{c.name.split(" ").map(n => n[0]).join("")}</div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 1 }}>{c.name}</div>
-                      <div style={{ fontSize: 11, color: THEME.textFaint }}>{c.date}{c.brands[0] ? ` \u00b7 ${c.brands[0].name} \u00b7 ${c.brands[0].shape}` : ' \u00b7 No brands yet'}</div>
-                    </div>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: THEME.pink, background: THEME.pinkLight + '33', padding: '3px 10px', borderRadius: THEME.radiusPill }}>Ready to size</div>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4d4d8" strokeWidth="2" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
-                  </button>
-                ))}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 0, padding: '0 4px' }}>
+                {needsReview.map((c, i) => {
+                  const p = CARD_PALETTES[i % CARD_PALETTES.length];
+                  const rot = CARD_ROTATIONS[i % CARD_ROTATIONS.length];
+                  const fromLeft = i % 2 === 0;
+                  return (
+                    <button key={c.id} className="customer-card" onClick={() => open(c.id)} style={{
+                      background: p.bg,
+                      borderRadius: 22,
+                      padding: '20px 22px 22px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      fontFamily: THEME.fontBody,
+                      width: '100%',
+                      marginBottom: i < needsReview.length - 1 ? -4 : 0,
+                      position: 'relative',
+                      zIndex: needsReview.length - i,
+                      minHeight: 110,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+                      opacity: 0,
+                      transform: `rotate(${rot}deg)`,
+                      animation: `springDrop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) ${i * 0.06}s forwards`,
+                    }}>
+                      {/* Date badge */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                        <div style={{
+                          fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.9)',
+                          background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: 8,
+                        }}>
+                          {c.date}
+                        </div>
+                      </div>
+                      {/* Name + status */}
+                      <div>
+                        <div style={{
+                          fontSize: isMobile ? 22 : 26, fontWeight: 900,
+                          fontFamily: THEME.fontDisplay, fontStyle: 'italic',
+                          color: 'white', lineHeight: 1.1, marginBottom: 8,
+                          textShadow: '0 1px 8px rgba(0,0,0,0.12)',
+                        }}>
+                          {c.name}
+                        </div>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.8)' }}>
+                          <span style={{ width: 7, height: 7, borderRadius: 4, display: 'inline-block', background: '#FDE047' }} />
+                          Ready to size
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
                 {needsReview.length === 0 && <div style={{ textAlign: 'center', padding: 40, color: THEME.textFaint, fontSize: 13 }}>No customers ready to size</div>}
               </div>
             </div>
@@ -676,45 +753,119 @@ export default function App() {
               <button onClick={home} style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)', border: 'none', width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
               </button>
-              <button onClick={() => setView("addCustomer")} style={{ background: `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})`, border: 'none', borderRadius: THEME.radiusPill, padding: '8px 16px', fontSize: 12, fontWeight: 700, color: 'white', cursor: 'pointer', fontFamily: THEME.fontBody }}>+ Add Customer</button>
+              <button onClick={() => setShowCreateKit(true)} style={{ background: `linear-gradient(135deg, ${THEME.pink}, ${THEME.purple})`, border: 'none', borderRadius: THEME.radiusPill, padding: '8px 16px', fontSize: 12, fontWeight: 700, color: 'white', cursor: 'pointer', fontFamily: THEME.fontBody }}>+ Add Customer</button>
             </div>
             <div style={{ padding: '0 24px 10px' }}>
               <h1 style={{ fontSize: 24, fontWeight: 900, margin: 0, color: 'white', fontFamily: THEME.fontDisplay, fontStyle: 'italic' }}>All Customers</h1>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 4, fontWeight: 500 }}>{customers.length} customers</div>
             </div>
           </CosmicBg>
           <CreamSection>
-            <div style={{ maxWidth: THEME.maxWidth, margin: '0 auto', padding: '24px 20px 0' }}>
+            <div style={{ maxWidth: THEME.maxWidth, margin: '0 auto', padding: '24px 20px 40px' }}>
+              {/* Search bar */}
               <div style={{
-                background: THEME.cardBg, borderRadius: THEME.radiusCard, padding: '10px 14px',
+                background: THEME.cardBg, borderRadius: THEME.radiusCard, padding: '12px 16px',
                 display: 'flex', alignItems: 'center', gap: 10,
                 border: `1.5px solid ${searchFocused ? THEME.purple : THEME.border}`,
-                marginBottom: 16, transition: 'border-color 0.2s',
+                marginBottom: 18, transition: 'border-color 0.2s',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
               }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={THEME.textFaint} strokeWidth="2.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-                <input type="text" value={search} onChange={e => setSearch(e.target.value)} onFocus={() => setSearchFocused(true)} onBlur={() => setSearchFocused(false)} placeholder="Search customers..." style={{ border: 'none', outline: 'none', background: 'none', flex: 1, fontSize: 14, fontFamily: THEME.fontBody, color: THEME.text }} />
+                <input type="text" value={search} onChange={e => setSearch(e.target.value)} onFocus={() => setSearchFocused(true)} onBlur={() => setSearchFocused(false)} placeholder="Find a customer..." style={{ border: 'none', outline: 'none', background: 'none', flex: 1, fontSize: 14, fontFamily: THEME.fontBody, color: THEME.text }} />
+                {search && <button onClick={() => setSearch("")} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={THEME.textFaint} strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>}
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {list.map((c, i) => (
-                  <button key={c.id} onClick={() => open(c.id)} style={{
-                    display: 'flex', alignItems: 'center', gap: 12, width: '100%',
-                    background: THEME.cardBg, border: 'none', borderRadius: THEME.radiusCard,
-                    padding: '14px 16px', cursor: 'pointer', textAlign: 'left', fontFamily: THEME.fontBody,
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                    animation: `fadeUp 0.4s ease-out ${i * 0.04}s both`,
+
+              {/* Filter tabs */}
+              <div style={{ display: 'flex', gap: 6, overflowX: 'auto', marginBottom: 22, paddingBottom: 2, WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+                {[
+                  { key: "all", label: "All" },
+                  { key: "ready", label: "Ready to size" },
+                  { key: "sized", label: "Sized" },
+                  { key: "waiting", label: "Waiting" },
+                ].map(f => (
+                  <button key={f.key} onClick={() => setFilter(f.key)} style={{
+                    padding: '8px 16px',
+                    borderRadius: THEME.radiusPill,
+                    border: filter === f.key ? 'none' : `1.5px solid ${THEME.border}`,
+                    background: filter === f.key ? THEME.cosmic : 'white',
+                    color: filter === f.key ? 'white' : THEME.textMuted,
+                    fontSize: 12,
+                    fontWeight: filter === f.key ? 700 : 500,
+                    fontFamily: THEME.fontBody,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                    transition: 'all 0.2s',
                   }}>
-                    <div style={{ width: 42, height: 42, borderRadius: 14, background: c.manual ? THEME.border : `linear-gradient(135deg, ${THEME.pinkLight}, ${THEME.lavender})`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: c.manual ? THEME.textMuted : 'white', fontSize: 13, fontWeight: 800, flexShrink: 0 }}>{c.name.split(" ").map(n => n[0]).join("")}</div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
-                        {c.name}
-                        {c.manual && <span style={{ fontSize: 9, fontWeight: 700, color: THEME.textFaint, background: THEME.border, padding: '2px 6px', borderRadius: THEME.radiusPill }}>Manual</span>}
-                      </div>
-                      <div style={{ fontSize: 11, color: THEME.textFaint }}>{c.date}{c.brands[0] ? ` \u00b7 ${c.brands[0].name} \u00b7 ${c.brands[0].shape}` : ""}</div>
-                    </div>
-                    {!c.scanComplete && <div style={{ fontSize: 10, fontWeight: 700, color: THEME.purpleDark, background: THEME.lavender + '44', padding: '3px 10px', borderRadius: THEME.radiusPill }}>Waiting for scan</div>}
-                    {c.scanComplete && !c.outcome && <div style={{ fontSize: 10, fontWeight: 700, color: THEME.pink, background: THEME.pinkLight + '33', padding: '3px 10px', borderRadius: THEME.radiusPill }}>Ready to size</div>}
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4d4d8" strokeWidth="2" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+                    {f.label}
                   </button>
                 ))}
+              </div>
+
+              {/* Stacked customer cards */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 0, padding: '0 4px' }}>
+                {list.map((c, i) => {
+                  const p = CARD_PALETTES[i % CARD_PALETTES.length];
+                  const rot = CARD_ROTATIONS[i % CARD_ROTATIONS.length];
+                  const status = !c.scanComplete ? "waiting" : !c.outcome ? "ready" : "sized";
+                  const fromLeft = i % 2 === 0;
+                  return (
+                    <button key={c.id} className="customer-card" onClick={() => open(c.id)} style={{
+                      background: p.bg,
+                      borderRadius: 22,
+                      padding: '20px 22px 22px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      fontFamily: THEME.fontBody,
+                      width: '100%',
+                      marginBottom: i < list.length - 1 ? -4 : 0,
+                      position: 'relative',
+                      zIndex: list.length - i,
+                      minHeight: 110,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                      opacity: cardsReady ? 1 : 0,
+                      transform: cardsReady
+                        ? `rotate(${rot}deg)`
+                        : `translateX(${fromLeft ? -50 : 50}px) rotate(${fromLeft ? -14 : 14}deg) scale(0.88)`,
+                      transition: `opacity 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) ${i * 0.07}s, transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) ${i * 0.07}s, box-shadow 0.3s ease`,
+                    }}>
+                      {/* Date badge */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                        <div style={{
+                          fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.9)',
+                          background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: 8,
+                        }}>
+                          {c.date}
+                        </div>
+                        {c.manual && <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.7)', background: 'rgba(255,255,255,0.15)', padding: '3px 8px', borderRadius: 6 }}>Manual</div>}
+                      </div>
+
+                      {/* Name + status */}
+                      <div>
+                        <div style={{
+                          fontSize: isMobile ? 22 : 26, fontWeight: 900,
+                          fontFamily: THEME.fontDisplay, fontStyle: 'italic',
+                          color: 'white', lineHeight: 1.1, marginBottom: 8,
+                          textShadow: '0 1px 8px rgba(0,0,0,0.12)',
+                        }}>
+                          {c.name}
+                        </div>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.8)' }}>
+                          <span style={{
+                            width: 7, height: 7, borderRadius: 4, display: 'inline-block',
+                            background: status === "waiting" ? 'rgba(255,255,255,0.5)' : status === "ready" ? '#FDE047' : '#6EE7B7',
+                          }} />
+                          {status === "waiting" ? "Waiting for scan" : status === "ready" ? "Ready to size" : "Sized"}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+                {list.length === 0 && <div style={{ textAlign: 'center', padding: 40, color: THEME.textFaint, fontSize: 13 }}>No customers found</div>}
               </div>
             </div>
           </CreamSection>
